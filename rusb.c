@@ -2,6 +2,8 @@
 #include <ruby.h>
 #include <libusb-1.0/libusb.h>
 
+static VALUE cDevice;
+
 /** Libusb::Context ************************************************************/
 
 typedef struct context_wrapper
@@ -40,14 +42,35 @@ static VALUE context_initialize(VALUE self)
 	return self;
 }
 
+static void initialize_default_context_if_needed()
+{
+  static unsigned char tried = 0;
+  if (!tried)
+  {
+		tried = 1;
+    int result = libusb_init(NULL);
+    // TODO: catch errors
+  }
+}
+
 /** Libusb::Device *************************************************************/
 
-VALUE get_device_list(int argc, VALUE * argv, VALUE self)
+static void device_free(void * p)
+{
+  printf("Unreffing device %d\n", p);
+  libusb_unref_device(p);
+}
+
+static VALUE get_device_list(int argc, VALUE * argv, VALUE self)
 {
   VALUE oContext;
   libusb_context * context = NULL;
   rb_scan_args(argc, argv, "01", &oContext);
-  if (!NIL_P(oContext))
+  if (NIL_P(oContext))
+  {
+		initialize_default_context_if_needed();
+	}
+	else
 	{
     printf("context is given\n");
     context_wrapper * cw;
@@ -55,11 +78,28 @@ VALUE get_device_list(int argc, VALUE * argv, VALUE self)
     context = cw->context;
 	}
 
+  // Get the list from libusb.
   libusb_device ** list;
   ssize_t size = libusb_get_device_list(context, &list);
 	// TODO: detect errors
+  if (size < 0)
+	{ 
+    // TODO: raise exception here
+		return INT2NUM(size);
+	}
 
-  return INT2NUM(size);
+  // Create a Ruby array of Libusb::Devices.
+  VALUE array = rb_ary_new2(size);
+  for(int i = 0; i < size; i++)
+  {
+    VALUE oDevice = Data_Wrap_Struct(cDevice, 0, device_free, list[i]);
+    rb_ary_push(array, oDevice);
+	}
+
+  // Free libusb's list.
+  libusb_free_device_list(list, 0);
+
+  return array;
 }
 
 void Init_rusb()
@@ -72,7 +112,6 @@ void Init_rusb()
   rb_define_method(cContext, "initialize", context_initialize, 0);
   rb_define_method(cContext, "initialize_copy", context_disallow_copy, 1);
 
-  VALUE cDevice = rb_define_class_under(mLibusb, "Device", rb_cObject);
+  cDevice = rb_define_class_under(mLibusb, "Device", rb_cObject);
   
-
 }
