@@ -57,7 +57,7 @@ static void initialize_default_context_if_needed()
 
 static void device_free(void * p)
 {
-  printf("Unreffing device %d\n", p);
+  printf("Unreffing device %d\n", (long)p); //tmphax
   libusb_unref_device(p);
 }
 
@@ -102,6 +102,20 @@ static VALUE get_device_list(int argc, VALUE * argv, VALUE self)
   return array;
 }
 
+VALUE get_bus_number(VALUE self)
+{
+  libusb_device * device;
+  Data_Get_Struct(self, libusb_device, device);
+  return INT2FIX(libusb_get_bus_number(device));
+}
+
+VALUE get_device_addess(VALUE self)
+{
+  libusb_device * device;
+  Data_Get_Struct(self, libusb_device, device);
+  return INT2FIX(libusb_get_device_address(device));
+}
+
 void Init_rusb()
 {
   VALUE mLibusb = rb_define_module("Libusb");
@@ -113,5 +127,6 @@ void Init_rusb()
   rb_define_method(cContext, "initialize_copy", context_disallow_copy, 1);
 
   cDevice = rb_define_class_under(mLibusb, "Device", rb_cObject);
-  
+  rb_define_method(cDevice, "bus_number", get_bus_number, 0); 
+  rb_define_method(cDevice, "address", get_device_addess, 0); 
 }
