@@ -69,7 +69,7 @@ static VALUE context_initialize(VALUE self)
   context_wrapper * cw;
   Data_Get_Struct(self, context_wrapper, cw);
   int result = libusb_init(&cw->context);
-  // TODO: throw exception here if result != 0
+  if (result < 0){ raise_usb_exception(result); }
 	return self;
 }
 
@@ -80,7 +80,7 @@ static void initialize_default_context_if_needed()
   {
 		tried = 1;
     int result = libusb_init(NULL);
-    // TODO: catch errors
+    if (result < 0){ raise_usb_exception(result); }
   }
 }
 
@@ -112,11 +112,9 @@ static VALUE get_device_list(int argc, VALUE * argv, VALUE self)
   // Get the list from libusb.
   libusb_device ** list;
   ssize_t size = libusb_get_device_list(context, &list);
-	// TODO: detect errors
   if (size < 0)
 	{ 
-    // TODO: raise exception here
-		return INT2NUM(size);
+		raise_usb_exception(size);
 	}
 
   // Create a Ruby array of Libusb::Devices.
