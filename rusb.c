@@ -2,6 +2,8 @@
 #include <ruby.h>
 #include <libusb-1.0/libusb.h>
 
+/** Libusb::Context ************************************************************/
+
 typedef struct context_wrapper
 {
   libusb_context * context;
@@ -38,11 +40,39 @@ static VALUE context_initialize(VALUE self)
 	return self;
 }
 
-void Init_my_test()
+/** Libusb::Device *************************************************************/
+
+VALUE get_device_list(int argc, VALUE * argv, VALUE self)
+{
+  VALUE oContext;
+  libusb_context * context = NULL;
+  rb_scan_args(argc, argv, "01", &oContext);
+  if (!NIL_P(oContext))
+	{
+    printf("context is given\n");
+    context_wrapper * cw;
+    Data_Get_Struct(oContext, context_wrapper, cw);
+    context = cw->context;
+	}
+
+  libusb_device ** list;
+  ssize_t size = libusb_get_device_list(context, &list);
+	// TODO: detect errors
+
+  return INT2NUM(size);
+}
+
+void Init_rusb()
 {
   VALUE mLibusb = rb_define_module("Libusb");
+  rb_define_singleton_method(mLibusb, "get_device_list", get_device_list, -1); 
+
   VALUE cContext = rb_define_class_under(mLibusb, "Context", rb_cObject);
   rb_define_alloc_func(cContext, context_alloc);
   rb_define_method(cContext, "initialize", context_initialize, 0);
   rb_define_method(cContext, "initialize_copy", context_disallow_copy, 1);
+
+  VALUE cDevice = rb_define_class_under(mLibusb, "Device", rb_cObject);
+  
+
 }

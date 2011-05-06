@@ -1,0 +1,4 @@
+Makefile
+ext_ruby.pdf
+*.so
+*.o
