@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 require 'helper'
-#require_relative 'rusb'
+require_relative '../lib/ruby-usb-pro'
 
 class TestUsb < Test::Unit::TestCase
   should "be able to list devices" do
