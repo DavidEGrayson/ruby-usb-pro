@@ -156,16 +156,18 @@ VALUE get_max_packet_size(VALUE self, VALUE oEndpoint)
 
 void Init_rusb()
 {
-  VALUE mLibusb = rb_define_module("Libusb");
+  //VALUE mLibusb = rb_define_module("Libusb");
+  VALUE mLibusb = rb_const_get(rb_cObject, rb_intern("Libusb"));
   rb_define_singleton_method(mLibusb, "get_device_list", get_device_list, -1); 
 
-  eAccessDeniedError = rb_define_class_under(mLibusb, "AccessDeniedError", rb_eException);
-  eNoDeviceError = rb_define_class_under(mLibusb, "NoDeviceError", rb_eException);
-  eNotFoundError = rb_define_class_under(mLibusb, "NotFoundError", rb_eException);
-  eBusyError = rb_define_class_under(mLibusb, "BusyError", rb_eException);
-  eTimeoutError = rb_define_class_under(mLibusb, "TimeoutError", rb_eException);
-	eOverflowError = rb_define_class_under(mLibusb, "OverflowError", rb_eException);
-  ePipeError = rb_define_class_under(mLibusb, "PipeError", rb_eException);
+  eAccessDeniedError = rb_const_get(mLibusb, rb_intern("AccessDeniedError"));
+  eNoDeviceError = rb_const_get(mLibusb, rb_intern("NoDeviceError"));
+  eNotFoundError = rb_const_get(mLibusb, rb_intern("NotFoundError"));
+  eBusyError = rb_const_get(mLibusb, rb_intern("BusyError"));
+  eTimeoutError = rb_const_get(mLibusb, rb_intern("TimeoutError"));
+	eOverflowError = rb_const_get(mLibusb, rb_intern("OverflowError"));
+  ePipeError = rb_const_get(mLibusb, rb_intern("PipeError"));
+
 
   VALUE cContext = rb_define_class_under(mLibusb, "Context", rb_cObject);
   rb_define_alloc_func(cContext, context_alloc);
