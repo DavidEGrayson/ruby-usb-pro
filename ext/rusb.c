@@ -145,11 +145,11 @@ VALUE get_device_addess(VALUE self)
   return INT2FIX(libusb_get_device_address(device));
 }
 
-VALUE get_max_packet_size(VALUE self, VALUE oEndpoint)
+VALUE get_max_packet_size(VALUE self, VALUE endpoint)
 {
   libusb_device * device;
-  Data_Get_Struct(self, libusb_device, device); 
-  int result = libusb_get_max_packet_size(device, NUM2INT(oEndpoint));
+  Data_Get_Struct(self, libusb_device, device);
+  int result = libusb_get_max_packet_size(device, NUM2INT(endpoint));
   if (result < 0){ raise_usb_exception(result); }
   return INT2FIX(result);
 }
@@ -167,7 +167,6 @@ void Init_rusb()
   eTimeoutError = rb_const_get(mLibusb, rb_intern("TimeoutError"));
 	eOverflowError = rb_const_get(mLibusb, rb_intern("OverflowError"));
   ePipeError = rb_const_get(mLibusb, rb_intern("PipeError"));
-
 
   VALUE cContext = rb_define_class_under(mLibusb, "Context", rb_cObject);
   rb_define_alloc_func(cContext, context_alloc);

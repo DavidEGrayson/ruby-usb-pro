@@ -4,13 +4,12 @@ describe Libusb do
   it "can list devices" do
     devices = Libusb.get_device_list
     devices.size.should > 0
+    devices.sort_by! { |device| [device.bus_number, device.address] }
     devices.each do |device|
+      device.class.should == Libusb::Device
       puts "#{device} #{device.bus_number} #{device.address}"
-      begin
-        device.max_packet_size(1)
-      rescue Exception=>e
-        e.class.should == Libusb::NotFoundError
-      end
+      lambda { device.max_packet_size(0) }.should raise_error Libusb::NotFoundError
+      lambda { device.max_packet_size(:foo) }.should raise_error TypeError
     end
   end
 end

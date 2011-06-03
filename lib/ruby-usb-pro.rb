@@ -25,6 +25,12 @@ module Libusb
 
   class PipeError < Exception
   end
+
+  class Device
+    def bus_number; end  # Source code is in rusb.c
+    def address; end     # Source code is in rusb.c
+    def max_packet_size(endpoint_number); end  # Source code is in rusb.c
+  end
 end
 
 require 'rusb'
