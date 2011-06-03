@@ -2,7 +2,7 @@ require_relative 'spec_helper'
 
 describe Usb do
   it "is a module" do
-    Usb.class.should == Module
+    Usb.should be_a_kind_of Module
   end
 
   it "can list devices" do
@@ -27,7 +27,8 @@ describe "Usb::Device#max_packet_size" do
     lambda { @device.max_packet_size(:foo) }.should raise_error TypeError
   end
 
-  it "doesn't work" do
+  it "doesn't actually work" do
+    # TODO: why doesn't max_packet_size work?
     lambda { @device.max_packet_size(0) }.should raise_error Usb::NotFoundError
   end
 end
