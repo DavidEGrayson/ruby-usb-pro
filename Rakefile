@@ -40,9 +40,13 @@ END
 end
 Jeweler::RubygemsDotOrgTasks.new
 
+task :make do
+  sh "cd ext && make"
+end
+
 require 'rspec/core'
 require 'rspec/core/rake_task'
-RSpec::Core::RakeTask.new(:spec) do |spec|
+RSpec::Core::RakeTask.new(:spec => :make) do |spec|
   spec.pattern = FileList['spec/**/*_spec.rb']
 end
 
