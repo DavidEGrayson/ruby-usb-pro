@@ -17,6 +17,12 @@ Jeweler::Tasks.new do |gem|
   gem.name = "ruby-usb-pro"
   gem.homepage = "http://github.com/DavidEGrayson/ruby-usb-pro"
   gem.license = "MIT"
+  gem.files = %w{.document *.txt *.rdoc VERSION
+    Gemfile Rakefile
+    ext/extconf.rb ext/*.c
+    lib/*.rb
+  } + FileList['spec/*.rb']
+
   gem.summary = %Q{Ruby library for controlling USB devices.}
   gem.description = <<END
 This is a Ruby library for controlling USB devices.
