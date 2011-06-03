@@ -12,7 +12,7 @@ static VALUE eTimeoutError;
 static VALUE eOverflowError;
 static VALUE ePipeError;
 
-/** Libusb exceptions **********************************************************/
+/** Usb exceptions **********************************************************/
 
 NORETURN(void raise_usb_exception(int error_code))
 {
@@ -35,7 +35,7 @@ NORETURN(void raise_usb_exception(int error_code))
   }
 }
 
-/** Libusb::Context ************************************************************/
+/** Usb::Context ************************************************************/
 
 typedef struct context_wrapper
 {
@@ -59,6 +59,8 @@ static VALUE context_alloc(VALUE klass)
   return Data_Wrap_Struct(klass, 0, context_free, cw);
 }
 
+// TODO: allow copying of contexts.  Need to implement our own
+// reference counting.
 static VALUE context_disallow_copy(VALUE copy, VALUE orig)
 {
   rb_raise(rb_eNotImpError, "Copying libusb contexts is not implemented.");
@@ -81,15 +83,24 @@ static void initialize_default_context_if_needed()
 		tried = 1;
     int result = libusb_init(NULL);
     if (result < 0){ raise_usb_exception(result); }
+    libusb_set_debug(NULL, 3); // tmphax
   }
 }
 
-/** Libusb::Device *************************************************************/
+/** Usb::Device *************************************************************/
 
 static void device_free(void * p)
 {
   printf("Unreffing device %p\n", p); //tmphax
   libusb_unref_device(p);
+}
+
+static VALUE device_copy(VALUE copy, VALUE orig)
+{
+  RDATA(copy)->data = RDATA(orig)->data;   // should be a pointer a libusb_device *
+  RDATA(copy)->dmark = RDATA(orig)->dmark; // should be NULL
+  RDATA(copy)->dfree = RDATA(orig)->dfree; // should be device_free
+  libusb_ref_device((libusb_device *)(RDATA(orig)->data));
 }
 
 static VALUE get_device_list(int argc, VALUE * argv, VALUE self)
@@ -176,4 +187,5 @@ void Init_rusb()
   rb_define_method(cDevice, "bus_number", get_bus_number, 0); 
   rb_define_method(cDevice, "address", get_device_addess, 0);
 	rb_define_method(cDevice, "max_packet_size", get_max_packet_size, 1);
+  rb_define_method(cDevice, "initialize_copy", device_copy, 1);
 }
