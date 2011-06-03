@@ -156,24 +156,23 @@ VALUE get_max_packet_size(VALUE self, VALUE endpoint)
 
 void Init_rusb()
 {
-  //VALUE mLibusb = rb_define_module("Libusb");
-  VALUE mLibusb = rb_const_get(rb_cObject, rb_intern("Libusb"));
-  rb_define_singleton_method(mLibusb, "get_device_list", get_device_list, -1); 
+  VALUE mUsb = rb_const_get(rb_cObject, rb_intern("Usb"));
+  rb_define_singleton_method(mUsb, "get_device_list", get_device_list, -1); 
 
-  eAccessDeniedError = rb_const_get(mLibusb, rb_intern("AccessDeniedError"));
-  eNoDeviceError = rb_const_get(mLibusb, rb_intern("NoDeviceError"));
-  eNotFoundError = rb_const_get(mLibusb, rb_intern("NotFoundError"));
-  eBusyError = rb_const_get(mLibusb, rb_intern("BusyError"));
-  eTimeoutError = rb_const_get(mLibusb, rb_intern("TimeoutError"));
-	eOverflowError = rb_const_get(mLibusb, rb_intern("OverflowError"));
-  ePipeError = rb_const_get(mLibusb, rb_intern("PipeError"));
+  eAccessDeniedError = rb_const_get(mUsb, rb_intern("AccessDeniedError"));
+  eNoDeviceError = rb_const_get(mUsb, rb_intern("NoDeviceError"));
+  eNotFoundError = rb_const_get(mUsb, rb_intern("NotFoundError"));
+  eBusyError = rb_const_get(mUsb, rb_intern("BusyError"));
+  eTimeoutError = rb_const_get(mUsb, rb_intern("TimeoutError"));
+	eOverflowError = rb_const_get(mUsb, rb_intern("OverflowError"));
+  ePipeError = rb_const_get(mUsb, rb_intern("PipeError"));
 
-  VALUE cContext = rb_define_class_under(mLibusb, "Context", rb_cObject);
+  VALUE cContext = rb_define_class_under(mUsb, "Context", rb_cObject);
   rb_define_alloc_func(cContext, context_alloc);
   rb_define_method(cContext, "initialize", context_initialize, 0);
   rb_define_method(cContext, "initialize_copy", context_disallow_copy, 1);
 
-  cDevice = rb_define_class_under(mLibusb, "Device", rb_cObject);
+  cDevice = rb_define_class_under(mUsb, "Device", rb_cObject);
   rb_define_method(cDevice, "bus_number", get_bus_number, 0); 
   rb_define_method(cDevice, "address", get_device_addess, 0);
 	rb_define_method(cDevice, "max_packet_size", get_max_packet_size, 1);

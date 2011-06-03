@@ -1,4 +1,4 @@
-module Libusb
+module Usb
   class TimeoutError < Exception
   end
 
