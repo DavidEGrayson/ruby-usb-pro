@@ -1,1 +1,1 @@
-require_relative '../ext/rusb'
+require 'rusb'
