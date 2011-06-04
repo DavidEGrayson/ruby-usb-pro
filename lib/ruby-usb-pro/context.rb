@@ -1,0 +1,3 @@
+class Usb::Context
+
+end

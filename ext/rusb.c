@@ -3,6 +3,7 @@
 #include <libusb-1.0/libusb.h>
 
 static VALUE cDevice;
+static VALUE cDeviceDescriptor;
 
 static VALUE eAccessDeniedError;
 static VALUE eNoDeviceError;
@@ -129,7 +130,7 @@ static VALUE get_device_list(int argc, VALUE * argv, VALUE self)
 		raise_usb_exception(size);
 	}
 
-  // Create a Ruby array of Libusb::Devices.
+  // Create a Ruby array of Usb::Devices.
   VALUE array = rb_ary_new2(size);
   for(int i = 0; i < size; i++)
   {
@@ -195,6 +196,30 @@ static VALUE device_close(VALUE self)
   return Qnil;
 }
 
+static VALUE device_get_device_descriptor(VALUE self)
+{
+  struct libusb_device_descriptor desc;
+  int result = libusb_get_device_descriptor(device_extract(self), &desc);
+  if (result < 0){ raise_usb_exception(result); }
+
+  VALUE args[14] = {
+    INT2FIX(desc.bLength),
+    INT2FIX(desc.bDescriptorType),
+    INT2FIX(desc.bcdUSB),
+    INT2FIX(desc.bDeviceClass),
+    INT2FIX(desc.bDeviceSubClass),
+    INT2FIX(desc.bDeviceProtocol),
+    INT2FIX(desc.bMaxPacketSize0),
+    INT2FIX(desc.idVendor),
+    INT2FIX(desc.idProduct),
+    INT2FIX(desc.bcdDevice),
+    INT2FIX(desc.iManufacturer),
+    INT2FIX(desc.iProduct),
+    INT2FIX(desc.iSerialNumber),
+    INT2FIX(desc.bNumConfigurations) };
+  return rb_class_new_instance(14, args, cDeviceDescriptor);
+}
+
 void Init_rusb()
 {
   VALUE mUsb = rb_const_get(rb_cObject, rb_intern("Usb"));
@@ -209,12 +234,14 @@ void Init_rusb()
   ePipeError = rb_const_get(mUsb, rb_intern("PipeError"));
   eClosedError = rb_const_get(mUsb, rb_intern("ClosedError"));
 
-  VALUE cContext = rb_define_class_under(mUsb, "Context", rb_cObject);
+  cDeviceDescriptor = rb_const_get(mUsb, rb_intern("DeviceDescriptor"));
+
+  VALUE cContext = rb_const_get(mUsb, rb_intern("Context"));
   rb_define_alloc_func(cContext, context_alloc);
   rb_define_method(cContext, "initialize", context_initialize, 0);
   rb_define_method(cContext, "initialize_copy", context_disallow_copy, 1);
 
-  cDevice = rb_define_class_under(mUsb, "Device", rb_cObject);
+  cDevice = rb_const_get(mUsb, rb_intern("Device"));
   rb_define_method(cDevice, "bus_number", device_get_bus_number, 0); 
   rb_define_method(cDevice, "address", device_get_addess, 0);
 	rb_define_method(cDevice, "max_packet_size", device_get_max_packet_size, 1);
@@ -222,4 +249,5 @@ void Init_rusb()
   rb_define_method(cDevice, "initialize_copy", device_copy, 1);
   rb_define_method(cDevice, "close", device_close, 0);
   rb_define_method(cDevice, "closed?", device_closed, 0);
+  rb_define_method(cDevice, "get_device_descriptor", device_get_device_descriptor, 0);
 }

@@ -104,6 +104,11 @@ describe Usb::Device do
     end
   end
 
+  it "has a device descriptor" do
+    dd = @device.device_descriptor
+    dd.should be_a_kind_of Usb::DeviceDescriptor
+  end
+
   it "can be used to open a DeviceHandle" do
     pending "imeplementation of open_handle"
     @device.open_handle.should be_a_kind_of Usb::DeviceHandle
@@ -125,4 +130,20 @@ describe Usb::DeviceHandle do
   end
 end
 
+describe Usb::DeviceDescriptor do
+  it "is a class that represents the USB Device Descriptor struct" do
+    Usb::DeviceDescriptor.should be_a_kind_of Class
+  end
 
+  it "can be constructed by passing in 14 values in the right order" do
+    dd = Usb::DeviceDescriptor.new(*((0..13).to_a))
+
+    fields = [:bLength, :bDescriptorType,
+    :bcdUSB, :bDeviceClass, :bDeviceSubClass, :bDeviceProtocol,
+    :bMaxPacketSize0, :idVendor, :idProduct, :bcdDevice,
+    :iManufacturer, :iProduct, :iSerialNumber, :bNumConfigurations]
+    fields.each_with_index do |field, index|
+      dd.send(field).should == index
+    end
+  end
+end

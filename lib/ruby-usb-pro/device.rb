@@ -18,9 +18,17 @@ class Usb::Device
   end
 
   def device_descriptor
-    # Cache the result because I think libusb actually does some 
-    # I/O to retrieve it.
+    # Cache the result because libusb actually does some I/O to retrieve it.
+    # TODO: verify this
     @device_descriptor ||= get_device_descriptor
+  end
+
+  def vendor_id
+    device_descriptor.idVendor
+  end
+
+  def product_id
+    device_descriptor.idProduct
   end
 
   private
