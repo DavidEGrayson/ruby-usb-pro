@@ -26,6 +26,10 @@ describe Usb::Device do
     @device = @devices.last
   end
 
+  it "is a class that represents a USB device connected to the computer" do
+    Usb::Device.should be_a_kind_of Class
+  end
+
   it "can be closed" do
     @device.should_not be_closed
     @device.close
@@ -97,9 +101,28 @@ describe Usb::Device do
     it "doesn't actually work" do
       # TODO: why doesn't max_packet_size work?
       lambda { @device.max_iso_packet_size(0) }.should raise_error Usb::NotFoundError
-    end    
+    end
+  end
+
+  it "can be used to open a DeviceHandle" do
+    pending "imeplementation of open_handle"
+    @device.open_handle.should be_a_kind_of Usb::DeviceHandle
+    Usb::DeviceHandle.open(@device).should be_a_kind_of Usb::DeviceHandle
+  end
+
+  it "can not be created in Ruby" do
+    lambda { Usb::Device.new }.should raise_error NotImplementedError
   end
 end
 
+describe Usb::DeviceHandle do
+  it "is a class the represents an open handle to a device" do
+    Usb::DeviceHandle.should be_a_kind_of Class
+  end
+
+  it "can not be created in Ruby" do
+    lambda { Usb::DeviceHandle.new }.should raise_error NotImplementedError 
+  end
+end
 
 
