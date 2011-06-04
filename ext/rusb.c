@@ -179,6 +179,14 @@ static VALUE device_get_max_packet_size(VALUE self, VALUE endpoint)
   return INT2FIX(result);
 }
 
+static VALUE device_get_max_iso_packet_size(VALUE self, VALUE endpoint)
+{
+  libusb_device * device = device_extract(self);
+  int result = libusb_get_max_iso_packet_size(device, NUM2INT(endpoint));
+  if (result < 0){ raise_usb_exception(result); }
+  return INT2FIX(result);
+}
+
 static VALUE device_close(VALUE self)
 {
   libusb_device * device = device_extract(self);
@@ -210,6 +218,7 @@ void Init_rusb()
   rb_define_method(cDevice, "bus_number", device_get_bus_number, 0); 
   rb_define_method(cDevice, "address", device_get_addess, 0);
 	rb_define_method(cDevice, "max_packet_size", device_get_max_packet_size, 1);
+	rb_define_method(cDevice, "max_iso_packet_size", device_get_max_iso_packet_size, 1);
   rb_define_method(cDevice, "initialize_copy", device_copy, 1);
   rb_define_method(cDevice, "close", device_close, 0);
   rb_define_method(cDevice, "closed?", device_closed, 0);

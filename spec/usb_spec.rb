@@ -10,8 +10,6 @@ describe Usb do
     devices.size.should > 0
     devices.each do |device|
       device.should be_a_kind_of Usb::Device
-      device.bus_number.should be_between 0, 20
-      device.address.should be_between 0, 127
     end
   end
 end
@@ -24,7 +22,8 @@ end
 
 describe Usb::Device do
   before :each do
-    @device = Usb::get_device_list.last
+    @devices = Usb::get_device_list
+    @device = @devices.last
   end
 
   it "can be closed" do
@@ -60,24 +59,47 @@ describe Usb::Device do
     @device.close
     lambda { device2.bus_number }.should_not raise_error
   end
+
+  describe :bus_number do
+    it "should be between 0 and 20 (most computers only have 1-5 busses)" do
+      @devices.each do |device|
+        device.bus_number.should be_between 0,20
+      end
+    end
+  end
+
+  describe :device_address do
+    it "should be between 0 and 127 as per the USB spec" do
+      @devices.each do |device|
+        device.address.should be_between 0, 127
+      end
+    end
+  end
+
+  describe :max_packet_size do
+    it "makes sure its argument is an int" do
+      lambda { @device.max_packet_size(2**64) }.should raise_error RangeError
+      lambda { @device.max_packet_size(:foo) }.should raise_error TypeError
+    end
+
+    it "doesn't actually work" do
+      # TODO: why doesn't max_packet_size work?
+      lambda { @device.max_packet_size(0) }.should raise_error Usb::NotFoundError
+    end
+  end
+
+  describe :max_iso_packet_size do
+    it "makes sure its argument is an int" do
+      lambda { @device.max_iso_packet_size(2**64) }.should raise_error RangeError
+      lambda { @device.max_iso_packet_size(:foo) }.should raise_error TypeError
+    end
+
+    it "doesn't actually work" do
+      # TODO: why doesn't max_packet_size work?
+      lambda { @device.max_iso_packet_size(0) }.should raise_error Usb::NotFoundError
+    end    
+  end
 end
-
-describe "Usb::Device#max_packet_size" do
-  before :each do
-    @device = Usb::get_device_list.last
-  end
-
-  it "makes sure its argument is an int" do
-    lambda { @device.max_packet_size(2**64) }.should raise_error RangeError
-    lambda { @device.max_packet_size(:foo) }.should raise_error TypeError
-  end
-
-  it "doesn't actually work" do
-    # TODO: why doesn't max_packet_size work?
-    lambda { @device.max_packet_size(0) }.should raise_error Usb::NotFoundError
-  end
-end
-
 
 
 

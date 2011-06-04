@@ -33,6 +33,7 @@ module Usb
     def bus_number; end  # Source code is in rusb.c
     def address; end     # Source code is in rusb.c
     def max_packet_size(endpoint_number); end  # Source code is in rusb.c
+    def max_iso_packet_size(endpoint_number); end
 
     def closed?; end     # Source code is in rusb.c
     def close; end       # Source code is in rusb.c
