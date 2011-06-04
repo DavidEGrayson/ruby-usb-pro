@@ -21,7 +21,7 @@ Jeweler::Tasks.new do |gem|
     Gemfile Rakefile
     ext/extconf.rb ext/*.c
     lib/*.rb
-  } + FileList['spec/*.rb']
+  } + FileList['spec/*.rb'] + FileList['lib/ruby-usb-pro/*.rb']
 
   gem.summary = %Q{Ruby library for controlling USB devices.}
   gem.description = <<END
