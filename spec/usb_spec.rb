@@ -23,37 +23,28 @@ describe Usb::Context do
 end
 
 describe Usb::Device do
-  before do
+  before :each do
     @device = Usb::get_device_list.last
   end
 
-  it "can be safely duplicated" do
-    GC.start
-    c1 = GC.count
+  it "can be closed" do
+    @device.should_not be_closed
+    @device.close
+    @device.should be_closed
+    lambda { @device.bus_number }.should raise_error Usb::ClosedError
+  end
 
-    # The duplicated object works.
-    @device.dup.address.should be_between 0, 127
+  it "is ok to close the duplicates" do
+    @device.dup.close
+    lambda { @device.bus_number }.should_not raise_error
+  end
 
-    # The duplicated object gets garbage collected.
-    GC.start; (GC.count - c1).should == 1
-
-    # But the original object still works.
-    @device.address.should be_between 0, 127
-
-    # Another duplicated object works.
-    d2 = @device.clone
-    d2.address.should be_between 0, 127
-
-    # We can throw away the original.
-    @device = nil
-    GC.start; (GC.count - c1).should == 2
-
-    # But the duplicated one still works.
-    d2.address.should be_between 0, 127            
+  it "is ok to close the original (it is not special)" do
+    device2 = @device.dup
+    @device.close
+    lambda { device2.bus_number }.should_not raise_error
   end
 end
-
-
 
 describe "Usb::Device#max_packet_size" do
   before do
@@ -70,3 +61,7 @@ describe "Usb::Device#max_packet_size" do
     lambda { @device.max_packet_size(0) }.should raise_error Usb::NotFoundError
   end
 end
+
+
+
+

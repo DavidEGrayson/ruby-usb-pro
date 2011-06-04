@@ -91,7 +91,7 @@ static void initialize_default_context_if_needed()
 
 static void device_free(void * p)
 {
-  printf("Unreffing device %p\n", p); //tmphax
+  //printf("Unreffing device %p\n", p); //tmphax
   libusb_unref_device(p);
 }
 
