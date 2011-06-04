@@ -11,6 +11,7 @@ static VALUE eBusyError;
 static VALUE eTimeoutError;
 static VALUE eOverflowError;
 static VALUE ePipeError;
+static VALUE eClosedError;
 
 /** Usb exceptions **********************************************************/
 
@@ -142,27 +143,48 @@ static VALUE get_device_list(int argc, VALUE * argv, VALUE self)
   return array;
 }
 
-VALUE get_bus_number(VALUE self)
+static libusb_device * device_extract(VALUE self)
 {
   libusb_device * device;
   Data_Get_Struct(self, libusb_device, device);
-  return INT2FIX(libusb_get_bus_number(device));
+  if (device == NULL)
+  {
+    rb_raise(eClosedError, "Device has been closed.");
+  }
+  return device;
 }
 
-VALUE get_device_addess(VALUE self)
+static VALUE device_closed(VALUE self)
 {
   libusb_device * device;
   Data_Get_Struct(self, libusb_device, device);
-  return INT2FIX(libusb_get_device_address(device));
+  return device == NULL ? Qtrue : Qfalse;
 }
 
-VALUE get_max_packet_size(VALUE self, VALUE endpoint)
+static VALUE device_get_bus_number(VALUE self)
 {
-  libusb_device * device;
-  Data_Get_Struct(self, libusb_device, device);
+  return INT2FIX(libusb_get_bus_number(device_extract(self)));
+}
+
+static VALUE device_get_addess(VALUE self)
+{
+  return INT2FIX(libusb_get_device_address(device_extract(self)));
+}
+
+static VALUE device_get_max_packet_size(VALUE self, VALUE endpoint)
+{
+  libusb_device * device = device_extract(self);
   int result = libusb_get_max_packet_size(device, NUM2INT(endpoint));
   if (result < 0){ raise_usb_exception(result); }
   return INT2FIX(result);
+}
+
+static VALUE device_close(VALUE self)
+{
+  libusb_device * device = device_extract(self);
+  RDATA(self)->data = NULL;
+  libusb_unref_device(device);
+  return Qnil;
 }
 
 void Init_rusb()
@@ -177,6 +199,7 @@ void Init_rusb()
   eTimeoutError = rb_const_get(mUsb, rb_intern("TimeoutError"));
 	eOverflowError = rb_const_get(mUsb, rb_intern("OverflowError"));
   ePipeError = rb_const_get(mUsb, rb_intern("PipeError"));
+  eClosedError = rb_const_get(mUsb, rb_intern("ClosedError"));
 
   VALUE cContext = rb_define_class_under(mUsb, "Context", rb_cObject);
   rb_define_alloc_func(cContext, context_alloc);
@@ -184,8 +207,10 @@ void Init_rusb()
   rb_define_method(cContext, "initialize_copy", context_disallow_copy, 1);
 
   cDevice = rb_define_class_under(mUsb, "Device", rb_cObject);
-  rb_define_method(cDevice, "bus_number", get_bus_number, 0); 
-  rb_define_method(cDevice, "address", get_device_addess, 0);
-	rb_define_method(cDevice, "max_packet_size", get_max_packet_size, 1);
+  rb_define_method(cDevice, "bus_number", device_get_bus_number, 0); 
+  rb_define_method(cDevice, "address", device_get_addess, 0);
+	rb_define_method(cDevice, "max_packet_size", device_get_max_packet_size, 1);
   rb_define_method(cDevice, "initialize_copy", device_copy, 1);
+  rb_define_method(cDevice, "close", device_close, 0);
+  rb_define_method(cDevice, "closed?", device_closed, 0);
 }

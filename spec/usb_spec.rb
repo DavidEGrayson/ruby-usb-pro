@@ -31,7 +31,23 @@ describe Usb::Device do
     @device.should_not be_closed
     @device.close
     @device.should be_closed
+  end
+
+  it "can also be closed with the unref method" do
+    @device.unref
+    @device.should be_closed
+  end
+
+  it "should not be used after it is closed" do
+    @device.close
     lambda { @device.bus_number }.should raise_error Usb::ClosedError
+    lambda { @device.address }.should raise_error Usb::ClosedError
+    lambda { @device.max_packet_size(:foo) }.should raise_error Usb::ClosedError
+  end
+
+  it "can not be closed twice" do
+    @device.close
+    lambda { @device.close }.should raise_error Usb::ClosedError
   end
 
   it "is ok to close the duplicates" do
@@ -47,7 +63,7 @@ describe Usb::Device do
 end
 
 describe "Usb::Device#max_packet_size" do
-  before do
+  before :each do
     @device = Usb::get_device_list.last
   end
 
