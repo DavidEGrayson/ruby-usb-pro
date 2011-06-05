@@ -6,12 +6,32 @@ describe Usb do
   end
 
   it "can list devices" do
-    devices = Usb.get_device_list
+    devices = Usb.devices
     devices.size.should > 0
     devices.each do |device|
       device.should be_a_kind_of Usb::Device
     end
   end
+
+  it "can list devices by certain criteria" do
+    all_devices = Usb.devices
+    device = all_devices.first
+    vendor_id = device.vendor_id
+    devices = all_devices.select { |d| d.vendor_id == vendor_id }
+    devices.size.should > 0
+    Usb.devices(:vendor_id => vendor_id).should == devices
+
+    product_id = device.vendor_id
+    devices.select! { |d| d.product_id == product_id }
+    Usb.devices(:vendor_id => vendor_id, :product_id => product_id).should == 
+
+    revision = device.revision
+    devices.select! { |d| d.revision == revision }
+    Usb.devices(:vendor_id => vendor_id, :product_id => product_id, :revision=>revision).should == devices
+
+    Usb.devices(:vendor_id => vendor_id, :product_id => product_id, :revision=>revision).should == devices
+  end
+
 end
 
 describe Usb::Context do
@@ -69,6 +89,18 @@ describe Usb::Device do
     @device.dup.should be_closed
   end
 
+  it "is equal to its duplicates" do
+    d2 = @device.dup
+    (@device == d2).should be true
+    (@device === d2).should be true
+    (@device.eql? d2).should be true
+    (@device.equal? d2).should be false
+  end
+
+  it "two different Usb::Devices can describe the same physical device" do
+    @devices.first.should be_same_device_as Usb::devices.first
+  end
+
   describe :bus_number do
     it "should be between 0 and 20 (most computers only have 1-5 busses)" do
       @devices.each do |device|
@@ -123,6 +155,14 @@ describe Usb::Device do
   it "can not be created in Ruby" do
     lambda { Usb::Device.new }.should raise_error NotImplementedError
   end
+
+  it "can convert bcd revision codes to strings" do
+    Usb::Device.revision_bcd_to_string(0x0000).should == '0.00'
+    Usb::Device.revision_bcd_to_string(0x0123).should == '1.23'
+    Usb::Device.revision_bcd_to_string(0x9000).should == '90.00'
+    Usb::Device.revision_bcd_to_string(0xFEDC).should == 'FE.DC'
+    Usb::Device.revision_bcd_to_string(0x1234).should == '12.34'
+  end
 end
 
 describe Usb::DeviceHandle do
@@ -152,3 +192,9 @@ describe Usb::DeviceDescriptor do
     end
   end
 end
+
+#describe Usb::ConfigurationDescriptor
+#  before :each do
+#    @config = Usb.
+#  end
+#end

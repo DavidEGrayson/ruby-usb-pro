@@ -178,6 +178,7 @@ static VALUE device_get_addess(VALUE self)
 
 static VALUE device_get_max_packet_size(VALUE self, VALUE endpoint)
 {
+  // TODO: if this function simply uses libusb_get_device_rescriptor, implement it in ruby
   libusb_device * device = device_extract(self);
   int result = libusb_get_max_packet_size(device, NUM2INT(endpoint));
   if (result < 0){ raise_usb_exception(result); }

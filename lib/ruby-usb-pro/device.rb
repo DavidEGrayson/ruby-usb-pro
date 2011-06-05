@@ -1,3 +1,11 @@
+module Usb
+  def self.devices(conditions={})
+    get_device_list.select do |device|
+      true # TODO: finish this
+    end
+  end
+end
+
 class Usb::Device
   def initialize
     raise NotImplementedError, "To get a Usb::Device object, use Usb::get_device_list"
@@ -29,6 +37,38 @@ class Usb::Device
 
   def product_id
     device_descriptor.idProduct
+  end
+
+  def revision_bcd
+    device_descriptor.bcdDevice
+  end
+
+  def device_class
+    device_descriptor.bDeviceClass
+  end
+
+  def device_subclass
+    device_descriptor.bDeviceSubClass
+  end
+
+  def device_protocol
+    device_descriptor.bDeviceProtocol
+  end
+
+  def revision_bcd
+    device_descriptor.bcdDevice
+  end
+
+  def revision
+    Device.revision_bcd_to_string(revision_bcd)
+  end
+
+  def self.revision_bcd_to_string(revision_bcd)
+    if revision_bcd < 0x1000
+      ('%03X' % revision_bcd).insert(1, '.')
+    else
+      ('%04X' % revision_bcd).insert(2, '.')
+    end
   end
 
   private
