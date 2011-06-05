@@ -93,16 +93,20 @@ static void initialize_default_context_if_needed()
 
 static void device_free(void * p)
 {
-  //printf("Unreffing device %p\n", p); //tmphax
+  //printf("Unreffing device %p\n", p);
   libusb_unref_device(p);
 }
 
 static VALUE device_copy(VALUE copy, VALUE orig)
 {
-  RDATA(copy)->data = RDATA(orig)->data;   // should be a pointer a libusb_device *
-  RDATA(copy)->dmark = RDATA(orig)->dmark; // should be NULL
-  RDATA(copy)->dfree = RDATA(orig)->dfree; // should be device_free
-  libusb_ref_device((libusb_device *)(RDATA(orig)->data));
+  libusb_device * device = (libusb_device *)(RDATA(orig)->data);
+  if (device)
+  {
+    libusb_ref_device(device);
+    RDATA(copy)->data = device;
+    RDATA(copy)->dmark = RDATA(orig)->dmark; // should be NULL
+    RDATA(copy)->dfree = RDATA(orig)->dfree; // should be device_free
+  }
 }
 
 static VALUE get_device_list(int argc, VALUE * argv, VALUE self)

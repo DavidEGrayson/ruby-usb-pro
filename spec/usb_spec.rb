@@ -36,7 +36,7 @@ describe Usb::Device do
     @device.should be_closed
   end
 
-  it "can also be closed with the unref method" do
+  it "can also be closed with the unref method (which is equivalent to close)" do
     @device.unref
     @device.should be_closed
   end
@@ -62,6 +62,11 @@ describe Usb::Device do
     device2 = @device.dup
     @device.close
     lambda { device2.bus_number }.should_not raise_error
+  end
+
+  it "is ok to close and then duplicate" do
+    @device.close
+    @device.dup.should be_closed
   end
 
   describe :bus_number do
