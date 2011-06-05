@@ -236,6 +236,14 @@ static VALUE device_get_device_descriptor(VALUE self)
   return rb_class_new_instance(14, args, cDeviceDescriptor);
 }
 
+static VALUE device_get_config_descriptor_binary(VALUE self, VALUE index)
+{
+  struct libusb_config_descriptor * config;
+  int result = libusb_get_config_descriptor(device_extract(self), NUM2INT(index), &config);
+  if (result < 0){ raise_usb_exception(result); }
+  return rb_str_new((char *)config, config->wTotalLength);
+}
+
 void Init_rusb()
 {
   VALUE mUsb = rb_const_get(rb_cObject, rb_intern("Usb"));
@@ -267,4 +275,5 @@ void Init_rusb()
   rb_define_method(cDevice, "closed?", device_closed, 0);
   rb_define_method(cDevice, "get_device_descriptor", device_get_device_descriptor, 0);
   rb_define_method(cDevice, "eql?", device_equal, 1);
+  rb_define_method(cDevice, "get_config_descriptor_binary", device_get_config_descriptor_binary, 1);
 }

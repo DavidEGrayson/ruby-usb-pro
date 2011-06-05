@@ -2,6 +2,8 @@ module Usb
   def self.devices(conditions={})
     get_device_list.select { |d| d.match?(conditions) }
   end
+
+  def get_device_list(context=nil); end # Source code is in rusb.c.    
 end
 
 class Usb::Device
@@ -89,6 +91,8 @@ class Usb::Device
     end
     return true
   end
+
+  def get_config_descriptor_binary(index); end # Souce code is in rusb.c
 
   private
   def get_device_descriptor; end  # Source code is in rusb.c

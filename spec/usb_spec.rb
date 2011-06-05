@@ -194,6 +194,13 @@ describe Usb::Device do
     Usb::Device.revision_bcd_to_string(0xFEDC).should == 'FE.DC'
     Usb::Device.revision_bcd_to_string(0x1234).should == '12.34'
   end
+
+  it "has configuration descriptors" do
+    config = @device.get_config_descriptor_binary(0)
+    config.should be_a_kind_of String
+    config.encoding.should be Encoding::ASCII_8BIT if config.respond_to?(:encoding)
+    config.length.should == config.unpack('xxv')[0]
+  end
 end
 
 describe Usb::DeviceHandle do
@@ -221,6 +228,12 @@ describe Usb::DeviceDescriptor do
     fields.each_with_index do |field, index|
       dd.send(field).should == index
     end
+  end
+
+  it "has some fields that aren't really needed" do
+    dd = Usb::devices.first.device_descriptor
+    dd.bLength.should == 18
+    dd.bDescriptorType.should == 1
   end
 end
 

@@ -1,4 +1,5 @@
 # TODO: make .vendor_name function for devices using http://www.linux-usb.org/usb.ids
+# TODO: make a descriptor parser for configuration descriptors
 
 require 'ruby-usb-pro/errors'
 require 'ruby-usb-pro/context'
