@@ -168,7 +168,6 @@ static VALUE device_equal(VALUE self, VALUE other)
 {
   // TODO: for == and ===, allow 'other' to be a subclass of Usb::Device
   // but keep the behavior of eql? the same
-  printf("Comparing: %p(%p) to %p(%p)\n", self, RDATA(self)->data, other, RDATA(other)->data);
   return ( CLASS_OF(other) == cDevice && 
 					 RDATA(self)->data == RDATA(other)->data ) ? Qtrue : Qfalse;
 }

@@ -23,7 +23,7 @@ describe Usb do
 
     product_id = device.vendor_id
     devices.select! { |d| d.product_id == product_id }
-    Usb.devices(:vendor_id => vendor_id, :product_id => product_id).should == 
+    Usb.devices(:vendor_id => vendor_id, :product_id => product_id).should == devices
 
     revision = device.revision
     devices.select! { |d| d.revision == revision }
@@ -48,6 +48,11 @@ describe Usb::Device do
 
   it "is a class that represents a USB device connected to the computer" do
     Usb::Device.should be_a_kind_of Class
+  end
+
+  it "can be matched against conditions" do
+    @device.should be_match :product_id => @device.product_id
+    @device.should be_match :revision => @device.revision
   end
 
   it "can be closed" do

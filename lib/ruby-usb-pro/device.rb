@@ -1,8 +1,6 @@
 module Usb
   def self.devices(conditions={})
-    get_device_list.select do |device|
-      true # TODO: finish this
-    end
+    get_device_list.select { |d| d.match?(conditions) }
   end
 end
 
@@ -60,7 +58,7 @@ class Usb::Device
   end
 
   def revision
-    Device.revision_bcd_to_string(revision_bcd)
+    self.class.revision_bcd_to_string(revision_bcd)
   end
 
   def self.revision_bcd_to_string(revision_bcd)
@@ -83,6 +81,13 @@ class Usb::Device
 
   def same_device_as?(other)
     bus_number == other.bus_number && address == other.address
+  end
+
+  def match?(conditions)
+    conditions.each do |method_name, value|
+      return false if send(method_name) != value
+    end
+    return true
   end
 
   private
