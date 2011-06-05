@@ -7,7 +7,7 @@ describe Usb do
 
   it "can list devices" do
     devices = Usb.devices
-    devices.size.should > 0
+    devices.size.should > 1
     devices.each do |device|
       device.should be_a_kind_of Usb::Device
     end
@@ -66,6 +66,8 @@ describe Usb::Device do
     lambda { @device.bus_number }.should raise_error Usb::ClosedError
     lambda { @device.address }.should raise_error Usb::ClosedError
     lambda { @device.max_packet_size(:foo) }.should raise_error Usb::ClosedError
+    lambda { @device.same_device_as?(nil) }.should raise_error Usb::ClosedError
+    lambda { @device.device_descriptor }.should raise_error Usb::ClosedError
   end
 
   it "can not be closed twice" do
@@ -97,8 +99,32 @@ describe Usb::Device do
     (@device.equal? d2).should be false
   end
 
-  it "two different Usb::Devices can describe the same physical device" do
-    @devices.first.should be_same_device_as Usb::devices.first
+  it "all closed devices are equal" do
+    d0 = @devices[0]
+    d1 = @devices[1]
+    d0.should_not == d1
+    d0.close
+    d1.close
+    d0.should == d1
+  end
+
+  it "is not equal to things that aren't devices" do
+    @device.close
+    @deivce.should_not == Object.new
+  end
+
+  it "same_device_as? tells you whether two different Usb::Devices describe the same physical device" do
+    # Assumption: The order of the devices returned by libusb is deterministic.
+    d1 = @devices.first
+
+    # TODO: implement contexts and change this to
+    # d2 = Usb::Context.new.devices.first
+    # d2.should_not == d1
+    # Then this will be a better test of same_device_as?
+    d2 = Usb::devices.first
+
+    d1.should be_same_device_as d2
+    d1.should_not be_same_device_as @devices[1]
   end
 
   describe :bus_number do

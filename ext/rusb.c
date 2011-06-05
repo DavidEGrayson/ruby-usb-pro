@@ -99,6 +99,11 @@ static void device_free(void * p)
 
 static VALUE device_copy(VALUE copy, VALUE orig)
 {
+  if (copy == orig)
+	{
+		return copy;
+	}
+
   libusb_device * device = (libusb_device *)(RDATA(orig)->data);
   if (device)
   {
@@ -159,11 +164,18 @@ static libusb_device * device_extract(VALUE self)
   return device;
 }
 
+static VALUE device_equal(VALUE self, VALUE other)
+{
+  // TODO: for == and ===, allow 'other' to be a subclass of Usb::Device
+  // but keep the behavior of eql? the same
+  printf("Comparing: %p(%p) to %p(%p)\n", self, RDATA(self)->data, other, RDATA(other)->data);
+  return ( CLASS_OF(other) == cDevice && 
+					 RDATA(self)->data == RDATA(other)->data ) ? Qtrue : Qfalse;
+}
+
 static VALUE device_closed(VALUE self)
 {
-  libusb_device * device;
-  Data_Get_Struct(self, libusb_device, device);
-  return device == NULL ? Qtrue : Qfalse;
+  return RDATA(self)->data ? Qfalse : Qtrue;
 }
 
 static VALUE device_get_bus_number(VALUE self)
@@ -255,4 +267,5 @@ void Init_rusb()
   rb_define_method(cDevice, "close", device_close, 0);
   rb_define_method(cDevice, "closed?", device_closed, 0);
   rb_define_method(cDevice, "get_device_descriptor", device_get_device_descriptor, 0);
+  rb_define_method(cDevice, "eql?", device_equal, 1);
 }

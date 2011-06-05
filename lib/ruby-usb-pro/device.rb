@@ -71,6 +71,20 @@ class Usb::Device
     end
   end
 
+  def ==(other)
+    eql?(other)
+  end
+
+  def ===(other)
+    eql?(other)
+  end
+
+  def eql?(other); end  # Source code in rusb.c
+
+  def same_device_as?(other)
+    bus_number == other.bus_number && address == other.address
+  end
+
   private
   def get_device_descriptor; end  # Source code is in rusb.c
 end
