@@ -92,6 +92,18 @@ class Usb::Device
     return true
   end
 
+  def open_handle
+    handle = open_handle_core
+    return handle unless block_given?
+    begin
+      return yield(handle)
+    ensure
+      handle.close
+    end
+  end
+
+  def open_handle_core; end  # Source code is in rusb.c
+
   def get_config_descriptor_binary(index); end # Souce code is in rusb.c
 
   private

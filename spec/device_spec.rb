@@ -33,6 +33,7 @@ describe Usb::Device do
     lambda { @device.max_packet_size(:foo) }.should raise_error Usb::ClosedError
     lambda { @device.same_device_as?(nil) }.should raise_error Usb::ClosedError
     lambda { @device.device_descriptor }.should raise_error Usb::ClosedError
+    lambda { @device.open_handle }.should raise_error Usb::ClosedError
   end
 
   it "can not be closed twice" do
@@ -138,13 +139,8 @@ describe Usb::Device do
   end
 
   it "can be used to open a DeviceHandle" do
-    pending "imeplementation of open_handle"
     @device.open_handle.should be_a_kind_of Usb::DeviceHandle
-    Usb::DeviceHandle.open(@device).should be_a_kind_of Usb::DeviceHandle
-  end
-
-  it "can not be created in Ruby" do
-    lambda { Usb::Device.new }.should raise_error NotImplementedError
+    # See device_handle_spec.rb for more ways to open a DeviceHandle.
   end
 
   it "can convert bcd revision codes to strings" do

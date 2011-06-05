@@ -1,6 +1,4 @@
-// /home/david/.rvm/src/ruby-1.9.2-p180/include/ruby.h
-#include <ruby.h>
-#include <libusb-1.0/libusb.h>
+#include "ruby-usb-pro.h"
 
 static VALUE cDevice;
 static VALUE cDeviceDescriptor;
@@ -85,7 +83,7 @@ static void initialize_default_context_if_needed()
 		tried = 1;
     int result = libusb_init(NULL);
     if (result < 0){ raise_usb_exception(result); }
-    libusb_set_debug(NULL, 3); // tmphax
+    //libusb_set_debug(NULL, 3);
   }
 }
 
@@ -153,7 +151,7 @@ static VALUE get_device_list(int argc, VALUE * argv, VALUE self)
   return array;
 }
 
-static libusb_device * device_extract(VALUE self)
+libusb_device * device_extract(VALUE self)
 {
   libusb_device * device;
   Data_Get_Struct(self, libusb_device, device);
@@ -252,6 +250,8 @@ void Init_rusb()
 
   cDeviceDescriptor = rb_const_get(mUsb, rb_intern("DeviceDescriptor"));
 
+  Init_device_handle();
+
   VALUE cContext = rb_const_get(mUsb, rb_intern("Context"));
   rb_define_alloc_func(cContext, context_alloc);
   rb_define_method(cContext, "initialize", context_initialize, 0);
@@ -267,4 +267,5 @@ void Init_rusb()
   rb_define_method(cDevice, "closed?", device_closed, 0);
   rb_define_method(cDevice, "get_device_descriptor", device_get_device_descriptor, 0);
   rb_define_method(cDevice, "eql?", device_equal, 1);
+  rb_define_method(cDevice, "open_handle_core", dh_new, 0);
 }
