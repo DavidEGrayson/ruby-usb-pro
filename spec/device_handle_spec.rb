@@ -27,11 +27,7 @@ describe Usb::DeviceHandle do
   end
 
   it "holds a reference to the device" do
-    @handle.should be_a_kind_of Usb::DeviceHandle
-    puts @handle.instance_variables.inspect
-    puts "??: " + @handle.device.inspect
-    (@handle.device == @device).should be_true
-    @handle.device.should be_equal @device
+    @handle.device.should be @device
   end
 
   it "can be created from a Usb::Device" do
