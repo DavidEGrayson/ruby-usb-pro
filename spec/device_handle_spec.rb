@@ -99,10 +99,12 @@ describe Usb::DeviceHandle do
     Usb::DeviceHandle.open(@device) do |handle|
       handle.should be_a_kind_of Usb::DeviceHandle
     end
+    handle.should be_closed
 
     @device.open_handle do |handle|
       handle.should be_a_kind_of Usb::DeviceHandle
     end
+    handle.should be_closed
   end
 
 end
