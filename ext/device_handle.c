@@ -62,6 +62,23 @@ static VALUE dh_equal(VALUE self, VALUE other)
 					 RDATA(self)->data == RDATA(other)->data ) ? Qtrue : Qfalse;
 }
 
+static VALUE dh_control_transfer(VALUE self, VALUE obmRequestType,
+	VALUE obRequest, VALUE owValue, VALUE owIndex, VALUE owLength)
+{
+  // TODO: fix most of this function
+  unsigned int timeout = 300;
+  unsigned char buffer[2000];
+  int result = libusb_control_transfer
+    (dh_extract(self),
+		 FIX2INT(obmRequestType), FIX2INT(obRequest),
+		 FIX2INT(owValue), FIX2INT(owIndex),
+		 buffer, FIX2INT(owLength),
+		 timeout);
+  if (result < 0){ usb_raise_exception(result); }
+  return INT2FIX(buffer[1]);
+}
+
+
 void Init_device_handle()
 {
   VALUE mUsb = rb_const_get(rb_cObject, rb_intern("Usb"));
@@ -71,5 +88,6 @@ void Init_device_handle()
   rb_define_method(cDeviceHandle, "close", dh_close, 0);
   rb_define_method(cDeviceHandle, "closed?", usb_object_closed, 0);
   rb_define_method(cDeviceHandle, "eql?", dh_equal, 1);
+  rb_define_method(cDeviceHandle, "control_transfer", dh_control_transfer, 5);
   symDevice = rb_intern("@device");
 }

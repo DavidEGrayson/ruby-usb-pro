@@ -115,5 +115,9 @@ describe Usb::DeviceHandle do
     h.should be_closed
   end
 
+  it "can get a list of language ids" do
+    @handle.lang_ids.should == "?"
+  end
+
 end
 

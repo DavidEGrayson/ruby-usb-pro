@@ -29,7 +29,11 @@ class Usb::DeviceHandle
   end
 
   def eql?(other); end  # Source code in rusb.c
-  def close; end  # Source code is in device_handle.c
 
+  def close; end  # Source code is in device_handle.c
   def closed?; end  # Source code is in device_handle.c
+
+  def lang_ids
+    control_transfer(0x80, 6, (3 << 8) | 0, 0, 255)
+  end
 end
