@@ -92,7 +92,7 @@ class Usb::Device
     return true
   end
 
-  def open_handle
+  def open_handle(&block)
     handle = open_handle_core
     return handle unless block_given?
     begin

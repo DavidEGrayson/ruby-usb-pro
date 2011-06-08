@@ -96,15 +96,23 @@ describe Usb::DeviceHandle do
   end
 
   it "can be used in a block to guarantee that it gets closed sooner" do
-    Usb::DeviceHandle.open(@device) do |handle|
+    t = false
+    h = @device.open_handle do |handle|
+      t = true
       handle.should be_a_kind_of Usb::DeviceHandle
+      handle
     end
-    handle.should be_closed
+    t.should be true
+    h.should be_closed
 
-    @device.open_handle do |handle|
+    t = false
+    h = Usb::DeviceHandle.open(@device) do |handle|
+      t = true
       handle.should be_a_kind_of Usb::DeviceHandle
+      handle
     end
-    handle.should be_closed
+    t.should be true
+    h.should be_closed
   end
 
 end

@@ -3,7 +3,7 @@ class Usb::DeviceHandle
 
   attr_reader :device
 
-  def self.open(arg)
+  def self.open(arg, &block)
     if arg.is_a? Usb::Device
       device = arg
     else
@@ -11,7 +11,7 @@ class Usb::DeviceHandle
       raise NotFoundError, "No devices found matching #{arg.inspect}." if devices.empty?
       device = devices.first
     end
-    device.open_handle
+    device.open_handle(&block)
   end
 
   def dup
