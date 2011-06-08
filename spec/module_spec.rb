@@ -32,5 +32,8 @@ describe Usb do
     Usb.devices(:vendor_id => vendor_id, :product_id => product_id, :revision=>revision).should == devices
   end
 
+  it "should not have a public get_device_list function" do
+    lambda { Usb.get_device_list }.should raise_error NoMethodError
+  end
 end
 

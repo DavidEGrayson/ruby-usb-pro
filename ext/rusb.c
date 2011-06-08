@@ -240,7 +240,7 @@ static VALUE device_get_device_descriptor(VALUE self)
 void Init_rusb()
 {
   VALUE mUsb = rb_const_get(rb_cObject, rb_intern("Usb"));
-  rb_define_singleton_method(mUsb, "get_device_list", get_device_list, -1); 
+  rb_define_protected_method(rb_singleton_class(mUsb), "get_device_list", get_device_list, -1);
 
   eAccessDeniedError = rb_const_get(mUsb, rb_intern("AccessDeniedError"));
   eNoDeviceError = rb_const_get(mUsb, rb_intern("NoDeviceError"));

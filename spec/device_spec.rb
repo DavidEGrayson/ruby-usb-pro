@@ -2,7 +2,7 @@ require_relative 'spec_helper'
 
 describe Usb::Device do
   before :each do
-    @devices = Usb::get_device_list
+    @devices = Usb.devices
     @device = @devices.last
   end
 
