@@ -10,7 +10,7 @@ static VALUE eBusyError;
 static VALUE eTimeoutError;
 static VALUE eOverflowError;
 static VALUE ePipeError;
-static VALUE eClosedError;
+VALUE eClosedError;
 
 /** Usb exceptions **********************************************************/
 
@@ -107,9 +107,9 @@ static VALUE device_copy(VALUE copy, VALUE orig)
   {
     libusb_ref_device(device);
     RDATA(copy)->data = device;
-    RDATA(copy)->dmark = RDATA(orig)->dmark; // should be NULL
-    RDATA(copy)->dfree = RDATA(orig)->dfree; // should be device_free
   }
+  RDATA(copy)->dmark = RDATA(orig)->dmark; // should be NULL
+  RDATA(copy)->dfree = RDATA(orig)->dfree; // should be device_free
 }
 
 static VALUE get_device_list(int argc, VALUE * argv, VALUE self)
@@ -155,6 +155,10 @@ libusb_device * device_extract(VALUE self)
 {
   libusb_device * device;
   Data_Get_Struct(self, libusb_device, device);
+  if (RDATA(self)->dfree != device_free)
+  {
+    rb_raise(rb_eTypeError, "Invalid type: expected a device.");
+  }
   if (device == NULL)
   {
     rb_raise(eClosedError, "Device has been closed.");
@@ -170,7 +174,7 @@ static VALUE device_equal(VALUE self, VALUE other)
 					 RDATA(self)->data == RDATA(other)->data ) ? Qtrue : Qfalse;
 }
 
-static VALUE device_closed(VALUE self)
+VALUE usb_object_closed(VALUE self)
 {
   return RDATA(self)->data ? Qfalse : Qtrue;
 }
@@ -204,9 +208,8 @@ static VALUE device_get_max_iso_packet_size(VALUE self, VALUE endpoint)
 
 static VALUE device_close(VALUE self)
 {
-  libusb_device * device = device_extract(self);
+  libusb_unref_device(device_extract(self));
   RDATA(self)->data = NULL;
-  libusb_unref_device(device);
   return Qnil;
 }
 
@@ -264,7 +267,7 @@ void Init_rusb()
 	rb_define_method(cDevice, "max_iso_packet_size", device_get_max_iso_packet_size, 1);
   rb_define_method(cDevice, "initialize_copy", device_copy, 1);
   rb_define_method(cDevice, "close", device_close, 0);
-  rb_define_method(cDevice, "closed?", device_closed, 0);
+  rb_define_method(cDevice, "closed?", usb_object_closed, 0);
   rb_define_method(cDevice, "get_device_descriptor", device_get_device_descriptor, 0);
   rb_define_method(cDevice, "eql?", device_equal, 1);
   rb_define_method(cDevice, "open_handle_core", dh_new, 0);

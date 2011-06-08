@@ -1,5 +1,5 @@
 class Usb::DeviceHandle
-  def initialize(device); end # source code is in rusb.c
+  def initialize(device); end # Source code is in device_handle.c
 
   attr_reader :device
 
@@ -15,6 +15,21 @@ class Usb::DeviceHandle
   end
 
   def dup
-    return device.open_handle
+    dev = device.open_handle
+    dev.close if closed?
+    dev
   end
+
+  def ==(other)
+    eql?(other)
+  end
+
+  def ===(other)
+    eql?(other)
+  end
+
+  def eql?(other); end  # Source code in rusb.c
+  def close; end  # Source code is in device_handle.c
+
+  def closed?; end  # Source code is in device_handle.c
 end

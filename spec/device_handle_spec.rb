@@ -31,18 +31,12 @@ describe Usb::DeviceHandle do
   end
 
   it "can be created from a Usb::Device" do
-    Usb::DeviceHandle.open(@device).should be_a_kind_of Usb::DeviceHandle
-    Usb::DeviceHandle.new(@device).should be_a_kind_of Usb::DeviceHandle
-  end
-
-  it "can be used in a block to guarantee that it gets closed sooner" do
-    Usb::DeviceHandle.open(@device) do |handle|
-      handle.should be_a_kind_of Usb::DeviceHandle
-    end
-
-    @device.open_handle do |handle|
-      handle.should be_a_kind_of Usb::DeviceHandle
-    end
+    h1 = Usb::DeviceHandle.open(@device)
+    h1.should be_a_kind_of Usb::DeviceHandle
+    h1.should_not be_closed
+    h2 = Usb::DeviceHandle.new(@device)
+    h2.should be_a_kind_of Usb::DeviceHandle
+    h2.should_not be_closed
   end
 
   it "can be closed" do
@@ -53,7 +47,7 @@ describe Usb::DeviceHandle do
 
   it "should not be used after it is closed" do
     @handle.close
-    # TODO: call some functions and show them crashing, e.g.:
+    pending "implementation of lang_ids"
     lambda { @handle.lang_ids }.should raise_error Usb::ClosedError
   end
 
@@ -64,12 +58,14 @@ describe Usb::DeviceHandle do
 
   it "is ok to close the duplicates" do
     @handle.dup.close
+    pending "implementation of lang_ids"
     lambda { @handle.lang_ids }.should_not raise_error
   end
 
   it "is ok to close the original (it is not special)" do
     h2 = @handle.dup
     @handle.close
+    pending "implementation of lang_ids"
     lambda { h2.lang_ids }.should_not raise_error
   end
 
@@ -97,6 +93,16 @@ describe Usb::DeviceHandle do
 
   it "is not equal to things that aren't handles" do
     @handle.should_not == @device
+  end
+
+  it "can be used in a block to guarantee that it gets closed sooner" do
+    Usb::DeviceHandle.open(@device) do |handle|
+      handle.should be_a_kind_of Usb::DeviceHandle
+    end
+
+    @device.open_handle do |handle|
+      handle.should be_a_kind_of Usb::DeviceHandle
+    end
   end
 
 end
