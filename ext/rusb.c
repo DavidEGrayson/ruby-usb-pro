@@ -31,7 +31,7 @@ NORETURN(void raise_usb_exception(int error_code))
 	case LIBUSB_ERROR_NO_MEM: rb_raise(rb_eNoMemError, "No memory.");
   case LIBUSB_ERROR_NOT_SUPPORTED: rb_raise(rb_eNotImpError, "USB operation not supported.");
   case LIBUSB_ERROR_OTHER: rb_raise(rb_eException, "Libusb error code %d.", error_code);
-	default: rb_raise(rb_eNotImpError, "tmphax");		
+	default: rb_raise(rb_eNotImpError, "tmphax"); // TODO: better error message		
   }
 }
 

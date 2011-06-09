@@ -33,7 +33,18 @@ class Usb::DeviceHandle
   def close; end  # Source code is in device_handle.c
   def closed?; end  # Source code is in device_handle.c
 
-  def lang_ids
+  def string_descriptor(index, language)
     control_transfer(0x80, 6, (3 << 8) | 0, 0, 255)
+  end
+
+  def lang_ids
+    ids_string = string_descriptor(0, 0)
+    i = 0
+    ids = []
+    while(i+1 < ids_string.length)
+      ids << ids_string[0].ord + ids_string[1].ord * 256
+      i+= 2
+    end
+    return ids
   end
 end

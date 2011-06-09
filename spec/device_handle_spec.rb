@@ -47,7 +47,6 @@ describe Usb::DeviceHandle do
 
   it "should not be used after it is closed" do
     @handle.close
-    pending "implementation of lang_ids"
     lambda { @handle.lang_ids }.should raise_error Usb::ClosedError
   end
 
@@ -58,14 +57,12 @@ describe Usb::DeviceHandle do
 
   it "is ok to close the duplicates" do
     @handle.dup.close
-    pending "implementation of lang_ids"
     lambda { @handle.lang_ids }.should_not raise_error
   end
 
   it "is ok to close the original (it is not special)" do
     h2 = @handle.dup
     @handle.close
-    pending "implementation of lang_ids"
     lambda { h2.lang_ids }.should_not raise_error
   end
 
@@ -116,7 +113,9 @@ describe Usb::DeviceHandle do
   end
 
   it "can get a list of language ids" do
-    @handle.lang_ids.should == "?"
+    lang_ids = @handle.lang_ids
+    lang_ids.should be_a_kind_of Array
+    lang_ids[0].should be_a_kind_of Fixnum
   end
 
 end

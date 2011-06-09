@@ -67,15 +67,20 @@ static VALUE dh_control_transfer(VALUE self, VALUE obmRequestType,
 {
   // TODO: fix most of this function
   unsigned int timeout = 300;
-  unsigned char buffer[2000];
+  const unsigned int bufsize = 255;
+  int wLength = FIX2INT(owLength);
+  if (wLength <= 0 || wLength > 0xFFFF)
+  {
+    rb_raise(rb_eRangeError, "Expected wLength to be between 1 and 65535.");
+  }
+  char buffer[wLength];
   int result = libusb_control_transfer
     (dh_extract(self),
 		 FIX2INT(obmRequestType), FIX2INT(obRequest),
 		 FIX2INT(owValue), FIX2INT(owIndex),
-		 buffer, FIX2INT(owLength),
-		 timeout);
+		 buffer, wLength, timeout);
   if (result < 0){ usb_raise_exception(result); }
-  return INT2FIX(buffer[1]);
+  return rb_str_new(buffer+2, result-2);
 }
 
 
