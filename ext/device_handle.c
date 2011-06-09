@@ -62,7 +62,7 @@ static VALUE dh_equal(VALUE self, VALUE other)
 					 RDATA(self)->data == RDATA(other)->data ) ? Qtrue : Qfalse;
 }
 
-static VALUE dh_control_transfer(VALUE self, VALUE obmRequestType,
+static VALUE dh_control_read_transfer(VALUE self, VALUE obmRequestType,
 	VALUE obRequest, VALUE owValue, VALUE owIndex, VALUE owLength)
 {
   // TODO: fix most of this function
@@ -93,6 +93,6 @@ void Init_device_handle()
   rb_define_method(cDeviceHandle, "close", dh_close, 0);
   rb_define_method(cDeviceHandle, "closed?", usb_object_closed, 0);
   rb_define_method(cDeviceHandle, "eql?", dh_equal, 1);
-  rb_define_method(cDeviceHandle, "control_transfer", dh_control_transfer, 5);
+  rb_define_method(cDeviceHandle, "control_read_transfer", dh_control_read_transfer, 5);
   symDevice = rb_intern("@device");
 }

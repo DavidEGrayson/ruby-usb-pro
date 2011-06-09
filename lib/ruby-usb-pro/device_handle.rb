@@ -1,4 +1,6 @@
 class Usb::DeviceHandle
+  MaxDescriptorLength = 1024
+
   def initialize(device); end # Source code is in device_handle.c
 
   attr_reader :device
@@ -33,18 +35,35 @@ class Usb::DeviceHandle
   def close; end  # Source code is in device_handle.c
   def closed?; end  # Source code is in device_handle.c
 
+  # USB 2.0 Spec section 9.4.3
+  def get_descriptor(type, index, language_id=0)
+    type = Usb::DescriptorType.find(type) if type.is_a? Symbol
+    raise "Expected type to be a symbol or integer" unless type.is_a? Integer
+    control_read_transfer(0x80, Usb::Requests::GetDescriptor, (type << 8) | index, language_id, MaxDescriptorLength)
+  end
+
   def string_descriptor(index, language_id=nil)
     language_id ||= lang_ids.first || 0
-    control_transfer(0x80, 6, (3 << 8) | index, language_id, 255)
+    string = get_descriptor Usb::DescriptorTypes::String, index, language_id
+    string.force_encoding(Encoding::UTF_16LE) if string.respond_to?(:force_encoding)
+    return string
+  end
+
+  def configuration_descriptor(index)
+    get_descriptor Usb::DescriptorTypes::Configuration, index
   end
 
   def lang_ids
     @lang_ids ||= get_lang_ids
   end
 
+  def control_read_transfer(bmRequestType, bRequest, wValue, wIndex, wLength)
+    # Source code is in device_handle.c
+  end
+
   private
   def get_lang_ids
-    ids_string = string_descriptor(0, 0)
+    ids_string = string_descriptor(0, 0).force_encoding(Encoding::ASCII_8BIT)
     i = 0
     ids = []
     while(i+1 < ids_string.length)

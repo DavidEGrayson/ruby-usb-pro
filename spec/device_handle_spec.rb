@@ -115,15 +115,29 @@ describe Usb::DeviceHandle do
   it "can get a list of language ids" do
     lang_ids = @handle.lang_ids
     lang_ids.should be_a_kind_of Array
-    lang_ids[0].should be_a_kind_of Fixnum
+    lang_ids.first.should be_a_kind_of Fixnum
   end
 
-  it "can get string descriptors" do
-    @handle.string_descriptor(1).should be_a_kind_of String
+  it "can get string descriptors as UTF-16LE strings" do
+    str = @handle.string_descriptor(1)
+    str.should be_a_kind_of String
+    str.encoding.should == Encoding::UTF_16LE
+  end
+
+  it "can get string descriptors of a particular language" do
+    @handle.string_descriptor(1, Usb::LangIds::English_US)
   end
 
   it "fails correctly" do
     lambda { @handle.string_descriptor(99) }.should raise_error Usb::PipeError
+  end
+
+  it "can get the configuration descriptor" do
+    c = @handle.configuration_descriptor(0)
+    c.should be_a_kind_of String
+    c.encoding.should be Encoding::ASCII_8BIT if c.respond_to?(:encoding)
+    #puts c.bytes.inspect
+    #c.length.should == c.unpack("xxv")
   end
 
 end

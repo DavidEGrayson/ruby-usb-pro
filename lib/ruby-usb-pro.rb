@@ -2,6 +2,7 @@
 # TODO: make a descriptor parser for configuration descriptors
 
 require 'ruby-usb-pro/errors'
+require 'ruby-usb-pro/constants'
 require 'ruby-usb-pro/context'
 require 'ruby-usb-pro/device_descriptor'
 require 'ruby-usb-pro/device'
