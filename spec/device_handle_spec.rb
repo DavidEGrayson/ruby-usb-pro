@@ -136,8 +136,7 @@ describe Usb::DeviceHandle do
     c = @handle.configuration_descriptor(0)
     c.should be_a_kind_of String
     c.encoding.should be Encoding::ASCII_8BIT if c.respond_to?(:encoding)
-    #puts c.bytes.inspect
-    #c.length.should == c.unpack("xxv")
+    c.length.should == c.unpack("xxv")[0]
   end
 
 end

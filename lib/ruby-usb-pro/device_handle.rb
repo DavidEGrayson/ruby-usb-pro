@@ -39,12 +39,13 @@ class Usb::DeviceHandle
   def get_descriptor(type, index, language_id=0)
     type = Usb::DescriptorType.find(type) if type.is_a? Symbol
     raise "Expected type to be a symbol or integer" unless type.is_a? Integer
-    control_read_transfer(0x80, Usb::Requests::GetDescriptor, (type << 8) | index, language_id, MaxDescriptorLength)
+    control_read_transfer(0x80, Usb::Requests::GetDescriptor, type*256 + index, language_id, MaxDescriptorLength)
   end
 
   def string_descriptor(index, language_id=nil)
     language_id ||= lang_ids.first || 0
     string = get_descriptor Usb::DescriptorTypes::String, index, language_id
+    string = string[2,255]
     string.force_encoding(Encoding::UTF_16LE) if string.respond_to?(:force_encoding)
     return string
   end

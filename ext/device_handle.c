@@ -80,7 +80,7 @@ static VALUE dh_control_read_transfer(VALUE self, VALUE obmRequestType,
 		 FIX2INT(owValue), FIX2INT(owIndex),
 		 buffer, wLength, timeout);
   if (result < 0){ raise_usb_exception(result); }
-  return rb_str_new(buffer+2, result-2);
+  return rb_str_new(buffer, result);
 }
 
 
