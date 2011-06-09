@@ -79,7 +79,7 @@ static VALUE dh_control_transfer(VALUE self, VALUE obmRequestType,
 		 FIX2INT(obmRequestType), FIX2INT(obRequest),
 		 FIX2INT(owValue), FIX2INT(owIndex),
 		 buffer, wLength, timeout);
-  if (result < 0){ usb_raise_exception(result); }
+  if (result < 0){ raise_usb_exception(result); }
   return rb_str_new(buffer+2, result-2);
 }
 

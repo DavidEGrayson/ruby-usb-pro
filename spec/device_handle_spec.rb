@@ -118,5 +118,13 @@ describe Usb::DeviceHandle do
     lang_ids[0].should be_a_kind_of Fixnum
   end
 
+  it "can get string descriptors" do
+    @handle.string_descriptor(1).should be_a_kind_of String
+  end
+
+  it "fails correctly" do
+    lambda { @handle.string_descriptor(99) }.should raise_error Usb::PipeError
+  end
+
 end
 
