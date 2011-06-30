@@ -51,7 +51,13 @@ class Usb::DeviceHandle
   end
 
   def configuration_descriptor(index)
-    get_descriptor Usb::DescriptorTypes::Configuration, index
+    @cached_config_descriptors ||= []
+    @cached_config_descriptors[index] ||= Usb::Descriptors::Configuration.from_binary configuration_descriptor_binary(index)
+  end
+
+  def configuration_descriptor_binary(index)
+    @cached_config_descriptors_binary ||= []
+    @cached_config_descriptors_binary[index] ||= get_descriptor Usb::DescriptorTypes::Configuration, index
   end
 
   def lang_ids

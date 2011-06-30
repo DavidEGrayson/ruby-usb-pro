@@ -4,10 +4,10 @@ require_relative 'spec_helper'
 # to the computer that you have permission to open.
 
 describe Usb::DeviceHandle do
-  before(:each) do
+  before(:all) do
     # Find a device that we have permission to open, and open a handle.
     catch :found_device do
-      # Devies we have permission to open tend to have higher addresses,
+      # Devices we have permission to open tend to have higher addresses,
       # so try them in reverse order by address.
       Usb.devices.sort_by{|d| d.address}.reverse.each do |device|
         begin
@@ -132,11 +132,16 @@ describe Usb::DeviceHandle do
     lambda { @handle.string_descriptor(99) }.should raise_error Usb::PipeError
   end
 
-  it "can get the configuration descriptor" do
-    c = @handle.configuration_descriptor(0)
-    c.should be_a_kind_of String
-    c.encoding.should be Encoding::ASCII_8BIT if c.respond_to?(:encoding)
-    c.length.should == c.unpack("xxv")[0]
+  it "can get the configuration descriptor as binary" do
+    cdb = @handle.configuration_descriptor_binary(0)
+    cdb.should be_a_kind_of String
+    cdb.encoding.should be Encoding::ASCII_8BIT if cdb.respond_to?(:encoding)
+    cdb.length.should == cdb.unpack("xxv")[0]
+  end
+
+  it "can get the configuration descriptor as binary" do
+    cd = @handle.configuration_descriptor(0)
+    cd.should be_a_kind_of Usb::Descriptors::Configuration
   end
 
 end

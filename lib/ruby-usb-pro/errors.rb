@@ -29,4 +29,7 @@ module Usb
   class ClosedError < Exception
   end
 
+  class DescriptorParsingError < Exception
+  end
+
 end
