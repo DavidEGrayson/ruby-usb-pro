@@ -4,7 +4,9 @@
 require 'ruby-usb-pro/errors'
 require 'ruby-usb-pro/constants'
 require 'ruby-usb-pro/context'
-require 'ruby-usb-pro/descriptors'
 require 'ruby-usb-pro/device'
 require 'ruby-usb-pro/device_handle'
-require 'rusb'  # This native extension must be required last.
+require 'ruby-usb-pro/descriptors'
+require 'rusb'
+
+require 'ruby-usb-pro/class/cdc.rb'

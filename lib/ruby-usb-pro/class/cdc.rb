@@ -1,0 +1,3 @@
+class Usb::Cdc
+  
+end

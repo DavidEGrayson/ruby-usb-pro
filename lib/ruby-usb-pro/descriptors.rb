@@ -8,7 +8,60 @@ class Usb::DeviceDescriptor < Struct.new(:bLength, :bDescriptorType,
 end
 
 module Usb::Descriptors
-  class Configuration
+  class Descriptor
+    def initialize
+      raise NotImplementedError, "Descriptor is an abstract class." if self.class == Descriptor
+    end
+
+    def self.descriptor_type(descriptor_type)
+      Configuration::SubDescriptors[descriptor_type] = self
+    end
+
+    private
+    def self.field(name, type, length)
+      @fields ||= []
+      @format ||= 'xx'
+      @length ||= 2
+
+      @fields << ('@' + name.to_s).to_sym
+      @format += type
+      @length += length
+
+      public; attr_accessor name
+    end
+
+    def self.uint8(name)
+      field name, 'C', 1
+    end
+
+    def self.uint16(name)
+      field name, 'v', 2
+    end
+
+    def self.uint32(name)
+      field name, 'V', 3
+    end
+    
+    public
+
+    def self.length
+      @length
+    end
+
+    def self.from_binary(binary)
+      bLength = binary[0].ord
+      raise Usb::DescriptorParsingError, "Expected bLength of #{self.class.name} descriptor to be #{@length}, but got #{bLength}" if bLength != @length
+
+      desc = new
+      values = binary.unpack(@format)
+      values.each_with_index do |value, n|
+        desc.instance_variable_set @fields[n], value
+      end
+      return desc
+    end
+  end
+
+  class Configuration < Descriptor
     attr_accessor :wLength
     attr_accessor :bNumInterfaces
     attr_accessor :bConfigurationValue
@@ -35,6 +88,13 @@ module Usb::Descriptors
       return descriptor
     end
 
+    def self.each_descriptor_binary(binary)
+      binary = binary.dup
+      while !binary.empty?
+        yield next_descriptor_binary(binary)
+      end
+    end
+
     def self.from_binary(binary)
       config = new
       bLength, bDescriptorType, wTotalLength, config.bNumInterfaces, config.bConfigurationValue, config.iConfiguration, config.bmAttributes, config.bMaxPower = binary.unpack('CCvCCCCC')
@@ -43,9 +103,7 @@ module Usb::Descriptors
 
       binary = binary[9..-1]
 
-      while !binary.empty?
-        # Get the descriptor's binary data.
-        db = next_descriptor_binary(binary)
+      each_descriptor_binary(binary) do |db|
         descriptor_type = db[1].ord
 
         # Create a ruby object for the descriptor.
@@ -69,31 +127,16 @@ module Usb::Descriptors
     end
   end
 
-  class Descriptor
-    def self.descriptor_type(descriptor_type)
-      Configuration::SubDescriptors[descriptor_type] = self
-    end
-  end
-
   class Interface < Descriptor
     descriptor_type 4
-
-    attr_accessor :bInterfaceNumber
-    attr_accessor :bAlternateSetting
-    attr_accessor :bNumEndpoints
-    attr_accessor :bInterfaceClass
-    attr_accessor :bInterfaceSubClass
-    attr_accessor :bInterfaceProtocol
-    attr_accessor :iInterface
-
-    def self.from_binary(binary)
-      i = new
-      bLength, i.bInterfaceNumber, i.bAlternateSetting, i.bNumEndpoints, i.bInterfaceClass, i.bInterfaceSubClass, i.bInterfaceProtocol, i.iInterface = binary.unpack "CxCCCCCCC"
-
-      raise Usb::DescriptorParsingError, "Expected bLength of interface descriptor to be 9, but got #{bLength}." if bLength != 9
-    end
+    uint8 :bInterfaceNumber
+    uint8 :bAlternateSetting
+    uint8 :bNumEndpoints
+    uint8 :bInterfaceClass
+    uint8 :bInterfaceSubClass
+    uint8 :bInterfaceProtocol
+    uint8 :iInterface
   end
 
 end
-
 
