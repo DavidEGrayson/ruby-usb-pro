@@ -22,6 +22,8 @@ class Usb::Descriptors::Configuration
   attr_accessor :descendents
   attr_accessor :children
 
+  SubDescriptors = {}
+
   def initialize()
     @descendents = []
     @children = []
@@ -29,9 +31,9 @@ class Usb::Descriptors::Configuration
 
   def self.next_descriptor_binary(binary)
     raise ArgumentError if binary.empty?
-    bLength = binary[0]
+    bLength = binary[0].ord
     raise Usb::DescriptorParsingError, "Unexpected end of descriptors: bLength=#{bLength} but only #{binary.length} bytes remaining." if binary.length < bLength 
-    descriptor = binary[1, bLength-1]
+    descriptor = binary[0, bLength]
     binary.replace(binary[bLength..-1])
     return descriptor
   end
@@ -41,17 +43,17 @@ class Usb::Descriptors::Configuration
     bLength, bDescriptorType, wTotalLength, config.bNumInterfaces, config.bConfigurationValue, config.iConfiguration, config.bmAttributes, config.bMaxPower = binary.unpack('CCvCCCCC')
 
     raise Usb::DescriptorParsingError, "Expected bLength of configuration descriptor to be 9, but got #{bLength}." if bLength != 9
-    
-    binary = binary[9,-1]
+
+    binary = binary[9..-1]
 
     while !binary.empty?
-      # Get the descriptor's binary data (all bytes except bLength).
+      # Get the descriptor's binary data.
       db = next_descriptor_binary(binary)
-      descriptorType = db[0]
+      descriptor_type = db[1].ord
 
       # Create a ruby object for the descriptor.
-      klass = SubDescriptors[descriptorType]
-      raise Usb::DescriptorParsingError, "Invalid descriptor type: #{descriptorType}." if klass.nil?
+      klass = SubDescriptors[descriptor_type]
+      raise Usb::DescriptorParsingError, "Unrecognized descriptor type: #{descriptor_type}." if klass.nil?
 
       config.descendents << klass.from_binary(db)
     end
@@ -69,3 +71,21 @@ class Usb::Descriptors::Configuration
     config
   end
 end
+
+class Usb::Descriptors::Interface
+  attr_accessor :bInterfaceNumber
+  attr_accessor :bAlternateSetting
+  attr_accessor :bNumEndpoints
+  attr_accessor :bInterfaceClass
+  attr_accessor :bInterfaceSubClass
+  attr_accessor :bInterfaceProtocol
+  attr_accessor :iInterface
+
+  def self.from_binary(binary)
+    i = new
+    bLength, i.bInterfaceNumber, i.bAlternateSetting, i.bNumEndpoints, i.bInterfaceClass, i.bInterfaceSubClass, i.bInterfaceProtocol, i.iInterface = binary.unpack "CCCCCCCC"
+    
+  end
+end
+
+Usb::Descriptors::Configuration::SubDescriptors[4] = Usb::Descriptors::Interface

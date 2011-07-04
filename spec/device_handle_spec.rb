@@ -3,23 +3,24 @@ require_relative 'spec_helper'
 # To run this spec, you must have at least one USB device connected
 # to the computer that you have permission to open.
 
-describe Usb::DeviceHandle do
-  before(:all) do
-    # Find a device that we have permission to open, and open a handle.
-    catch :found_device do
-      # Devices we have permission to open tend to have higher addresses,
-      # so try them in reverse order by address.
-      Usb.devices.sort_by{|d| d.address}.reverse.each do |device|
-        begin
-          @handle = device.open_handle
-          @device = device
-          throw :found_device
-        rescue Usb::AccessDeniedError
-          puts "Access denied to #{@device}."
-        end
-      end
-      puts "Unable to open any USB devices: permission denied."
+# Find a device that we have permission to open, and open a handle.
+catch :found_device do
+  # Devices we have permission to open tend to have higher addresses,
+  # so try them in reverse order by address.
+  Usb.devices.sort_by{|d| d.address}.reverse.each do |device|
+    begin
+      device.open_handle
+      $openable_device = device
+    throw :found_device
+      rescue Usb::AccessDeniedError
     end
+  end
+  puts "WARNING: device_handle_spec.rb can not run because permission is denied to open any of the USB devices connected."
+end
+
+describe Usb::DeviceHandle do
+  before(:each) do
+    @handle = $openable_device.open_handle
   end
 
   it "is a class that represents an open handle to a device" do
@@ -30,17 +31,11 @@ describe Usb::DeviceHandle do
     @handle.should_not be_nil
   end
 
-  def self.if_handle_it(*args)
-    it(*args) do
-      yield if @handle
-    end
-  end
-
-  if_handle_it "holds a reference to the device" do
+  it "holds a reference to the device" do
     @handle.device.should be @device
   end
 
-  if_handle_it "can be created from a Usb::Device" do
+  it "can be created from a Usb::Device" do
     h1 = Usb::DeviceHandle.open(@device)
     h1.should be_a_kind_of Usb::DeviceHandle
     h1.should_not be_closed
@@ -49,39 +44,39 @@ describe Usb::DeviceHandle do
     h2.should_not be_closed
   end
 
-  if_handle_it "can be closed" do
+  it "can be closed" do
     @handle.should_not be_closed
     @handle.close
     @handle.should be_closed
   end
 
-  if_handle_it "should not be used after it is closed" do
+  it "should not be used after it is closed" do
     @handle.close
     lambda { @handle.lang_ids }.should raise_error Usb::ClosedError
   end
 
-  if_handle_it "can not be closed twice" do
+  it "can not be closed twice" do
     @handle.close
     lambda { @handle.close }.should raise_error Usb::ClosedError
   end
 
-  if_handle_it "is ok to close the duplicates" do
+  it "is ok to close the duplicates" do
     @handle.dup.close
     lambda { @handle.lang_ids }.should_not raise_error
   end
 
-  if_handle_it "is ok to close the original (it is not special)" do
+  it "is ok to close the original (it is not special)" do
     h2 = @handle.dup
     @handle.close
     lambda { h2.lang_ids }.should_not raise_error
   end
 
-  if_handle_it "is ok to close and then duplicate" do
+  it "is ok to close and then duplicate" do
     @handle.close
     @handle.dup.should be_closed
   end
 
-  if_handle_it "is not equal to its duplicates because duplicating opens a new libusb_device_handle" do
+  it "is not equal to its duplicates because duplicating opens a new libusb_device_handle" do
     h2 = @handle.dup
     (@handle == h2).should be false
     (@handle === h2).should be false
@@ -89,7 +84,7 @@ describe Usb::DeviceHandle do
     (@handle.equal? h2).should be false
   end
 
-  if_handle_it "all closed handles are equal" do
+  it "all closed handles are equal" do
     h0 = @handle
     h1 = @handle.dup
     h0.should_not == h1
@@ -98,11 +93,11 @@ describe Usb::DeviceHandle do
     h0.should == h1
   end
 
-  if_handle_it "is not equal to things that aren't handles" do
+  it "is not equal to things that aren't handles" do
     @handle.should_not == @device
   end
 
-  if_handle_it "can be used in a block to guarantee that it gets closed sooner" do
+  it "can be used in a block to guarantee that it gets closed sooner" do
     t = false
     h = @device.open_handle do |handle|
       t = true
@@ -122,37 +117,36 @@ describe Usb::DeviceHandle do
     h.should be_closed
   end
 
-  if_handle_it "can get a list of language ids" do
+  it "can get a list of language ids" do
     lang_ids = @handle.lang_ids
     lang_ids.should be_a_kind_of Array
     lang_ids.first.should be_a_kind_of Fixnum
   end
 
-  if_handle_it "can get string descriptors as UTF-16LE strings" do
+  it "can get string descriptors as UTF-16LE strings" do
     str = @handle.string_descriptor(1)
     str.should be_a_kind_of String
     str.encoding.should == Encoding::UTF_16LE
   end
 
-  if_handle_it "can get string descriptors of a particular language" do
+  it "can get string descriptors of a particular language" do
     @handle.string_descriptor(1, Usb::LangIds::English_US)
   end
 
-  if_handle_it "fails correctly" do
+  it "fails correctly" do
     lambda { @handle.string_descriptor(99) }.should raise_error Usb::PipeError
   end
 
-  if_handle_it "can get the configuration descriptor as binary" do
+  it "can get the configuration descriptor as binary" do
     cdb = @handle.configuration_descriptor_binary(0)
     cdb.should be_a_kind_of String
     cdb.encoding.should be Encoding::ASCII_8BIT if cdb.respond_to?(:encoding)
     cdb.length.should == cdb.unpack("xxv")[0]
   end
 
-  if_handle_it "can get the configuration descriptor as binary" do
+  it "can get the configuration descriptor as binary" do
     cd = @handle.configuration_descriptor(0)
     cd.should be_a_kind_of Usb::Descriptors::Configuration
   end
 
-end
-
+end if $openable_device
