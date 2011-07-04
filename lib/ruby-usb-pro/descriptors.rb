@@ -71,7 +71,7 @@ module Usb::Descriptors
 
   class Descriptor
     def self.descriptor_type(descriptor_type)
-      Configuration::SubDescriptors[4] = Usb::Descriptors::Interface      
+      Configuration::SubDescriptors[descriptor_type] = self
     end
   end
 
@@ -88,7 +88,9 @@ module Usb::Descriptors
 
     def self.from_binary(binary)
       i = new
-      bLength, i.bInterfaceNumber, i.bAlternateSetting, i.bNumEndpoints, i.bInterfaceClass, i.bInterfaceSubClass, i.bInterfaceProtocol, i.iInterface = binary.unpack "CCCCCCCC"
+      bLength, i.bInterfaceNumber, i.bAlternateSetting, i.bNumEndpoints, i.bInterfaceClass, i.bInterfaceSubClass, i.bInterfaceProtocol, i.iInterface = binary.unpack "CxCCCCCCC"
+
+      raise Usb::DescriptorParsingError, "Expected bLength of interface descriptor to be 9, but got #{bLength}." if bLength != 9
     end
   end
 
