@@ -8,21 +8,49 @@ class Usb::DeviceDescriptor < Struct.new(:bLength, :bDescriptorType,
 end
 
 module Usb::Descriptors
+  DescriptorFactories = {}
+  ClassSpecificDescriptorFactories = {}
+
   class Descriptor
     def initialize
       raise NotImplementedError, "Descriptor is an abstract class." if self.class == Descriptor
     end
 
     def self.descriptor_type(descriptor_type)
-      Configuration::SubDescriptors[descriptor_type] = self
+      @descriptor_type = descriptor_type
+      DescriptorFactories[descriptor_type] = self
+      uint8 :bDescriptorType
+    end
+
+    def self.class_specific(class_code, descriptor_type, descriptor_subtype)
+      if descriptor_type.is_a?(Symbol)
+        descriptor_type = Usb::DescriptorTypes::Table[descriptor_type]
+        raise ArgumentError, "Unrecognized descriptor_type :#{descriptor_type}." if descriptor_type.nil?
+      end
+      descriptor_type |= 0x20  # Set the class-specific bit
+
+      x = (ClassSpecificDescriptorFactories[class_code] ||= {})
+      x = (x[descriptor_type] ||= {})
+      x[descriptor_subtype] = self
+
+      @descriptor_type = descriptor_type
+      @descriptor_subtype = descriptor_subtype
+
+      uint8 :bDescriptorType
+      uint8 :bDescriptorSubtype
+    end
+
+    def self.inherited(descriptor_class)
+      descriptor_class.instance_eval do
+        @fields = []
+        @format = ''
+        @length = 0
+        uint8 :bLength
+      end
     end
 
     private
     def self.field(name, type, length)
-      @fields ||= []
-      @format ||= 'xx'
-      @length ||= 2
-
       @fields << ('@' + name.to_s).to_sym
       @format += type
       @length += length
@@ -50,7 +78,7 @@ module Usb::Descriptors
 
     def self.from_binary(binary)
       bLength = binary[0].ord
-      raise Usb::DescriptorParsingError, "Expected bLength of #{self.class.name} descriptor to be #{@length}, but got #{bLength}" if bLength != @length
+      raise Usb::DescriptorParsingError, "Expected bLength of #{self} to be #{@length}, but got #{bLength}" if bLength != @length
 
       desc = new
       values = binary.unpack(@format)
@@ -71,8 +99,6 @@ module Usb::Descriptors
 
     attr_accessor :descendents
     attr_accessor :children
-
-    SubDescriptors = {}
 
     def initialize()
       @descendents = []
@@ -95,7 +121,25 @@ module Usb::Descriptors
       end
     end
 
-    def self.from_binary(binary)
+    def self.get_factory(binary, device_class_code=0)
+      descriptor_type = binary[1].ord
+      if (descriptor_type & 0x20) != 0
+        descriptor_subtype = binary[2].ord
+        x = ClassSpecificDescriptorFactories[device_class_code]
+        raise Usb::DescriptorParsingError, "No class-specific descriptors known for class code #{'0x%02x'%device_class_code}." unless x
+        x = x[descriptor_type]
+        raise Usb::DescriptorParsingError, "No class-specific descriptors known for class code #{'0x%02x'%device_class_code} and bDescriptorType=#{'0x%02x'%descriptor_type}." unless x
+        x = x[descriptor_subtype]
+        raise Usb::DescriptorParsingError, "No class-specific descriptors known for class code #{'0x%02x'%device_class_code}, bDescriptorType=#{'0x%02x'%descriptor_type}, bDescriptorSubtype=#{'0x%02x'%descriptor_subtype}." unless x
+        return x
+      else
+        factory = DescriptorFactories[descriptor_type]
+        raise Usb::DescriptorParsingError, "Unrecognized descriptor type: #{descriptor_type}." if factory.nil?
+        return factory
+      end
+    end
+
+    def self.from_binary(binary, device_class_code)
       config = new
       bLength, bDescriptorType, wTotalLength, config.bNumInterfaces, config.bConfigurationValue, config.iConfiguration, config.bmAttributes, config.bMaxPower = binary.unpack('CCvCCCCC')
 
@@ -103,14 +147,10 @@ module Usb::Descriptors
 
       binary = binary[9..-1]
 
+      current_device_class_code = device_class_code
       each_descriptor_binary(binary) do |db|
-        descriptor_type = db[1].ord
-
-        # Create a ruby object for the descriptor.
-        klass = SubDescriptors[descriptor_type]
-        raise Usb::DescriptorParsingError, "Unrecognized descriptor type: #{descriptor_type}." if klass.nil?
-
-        config.descendents << klass.from_binary(db)
+        factory = get_factory(db, current_device_class_code)
+        config.descendents << factory.from_binary(db)
       end
 
       # Organize the descriptors in a heirarchy.

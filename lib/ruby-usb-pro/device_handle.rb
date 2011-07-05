@@ -52,7 +52,7 @@ class Usb::DeviceHandle
 
   def configuration_descriptor(index)
     @cached_config_descriptors ||= []
-    @cached_config_descriptors[index] ||= Usb::Descriptors::Configuration.from_binary configuration_descriptor_binary(index)
+    @cached_config_descriptors[index] ||= Usb::Descriptors::Configuration.from_binary configuration_descriptor_binary(index), handle.device_descriptor.bDeviceClass
   end
 
   def configuration_descriptor_binary(index)
