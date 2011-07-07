@@ -108,19 +108,35 @@ module Usb::Descriptors
   end
 
   class Configuration < Descriptor
-    attr_accessor :wLength
-    attr_accessor :bNumInterfaces
-    attr_accessor :bConfigurationValue
-    attr_accessor :iConfiguration
-    attr_accessor :bmAttributes
-    attr_accessor :bMaxPower
+    descriptor_type Usb::DescriptorTypes::Configuration 
+    uint16 :wTotalLength
+    uint8 :bNumInterfaces
+    uint8 :bConfigurationValue
+    uint8 :iConfiguration
+    uint8 :bmAttributes
+    uint8 :bMaxPower
 
     attr_accessor :descendents
-    attr_accessor :children
 
     def initialize()
+      super
       @descendents = []
-      @children = []
+    end
+
+    def self_powered?
+      (@bmAttributes & 0x40) != 0
+    end
+
+    def remote_wakeup?
+      (@bmAttributes & 0x20) != 0
+    end
+
+    def interfaces
+      interfaces = []
+      children.each do |child|
+        interfaces[child.bInterfaceNumber] = child if child.is_a? Interface
+      end
+      interfaces
     end
 
     def self.next_descriptor_binary(binary)
@@ -158,17 +174,17 @@ module Usb::Descriptors
     end
 
     def self.from_binary(binary, device_class_code)
-      config = new
-      bLength, bDescriptorType, wTotalLength, config.bNumInterfaces, config.bConfigurationValue, config.iConfiguration, config.bmAttributes, config.bMaxPower = binary.unpack('CCvCCCCC')
+      config = super(binary)
 
-      raise Usb::DescriptorParsingError, "Expected bLength of configuration descriptor to be 9, but got #{bLength}." if bLength != 9
-
-      binary = binary[9..-1]
+      remaining_binary = binary[@length..-1]
 
       current_device_class_code = device_class_code
-      each_descriptor_binary(binary) do |db|
+      each_descriptor_binary remaining_binary do |db|
         factory = get_factory(db, current_device_class_code)
-        config.descendents << factory.from_binary(db)
+        new_desc = factory.from_binary(db)
+        config.descendents << new_desc
+        # TODO: ask new_desc what the 'current_device_class_code' should
+        # be for its descendents and figure out how to maintain that    
       end
 
       # Organize the descriptors in a heirarchy.

@@ -19,6 +19,28 @@ describe Usb::Descriptors::Configuration do
     cd = Usb::Descriptors::Configuration.from_binary wixel_config_descriptor, Usb::Cdc::ClassCode
     cd.should be_a_kind_of Usb::Descriptors::Configuration
 
+    # https://github.com/pololu/wixel-sdk/blob/3601f299c7dd38ab2a9e0ec93451e82aeeeabb46/libraries/src/usb_cdc_acm/usb_cdc_acm.c#L127
+    cd.bLength.should == 9
+    cd.bDescriptorType.should == Usb::DescriptorTypes::Configuration
+    cd.wTotalLength.should == wixel_config_descriptor.length
+    cd.bNumInterfaces.should == 2
+    cd.bConfigurationValue.should == 1
+    cd.iConfiguration.should == 0
+    cd.bmAttributes.should == 0xC0
+    cd.should be_self_powered
+    cd.should_not be_remote_wakeup
+    cd.bMaxPower.should == 50
+
+    comm = cd.children[0]
+    comm.should be cd.interfaces[0]
+    comm.should be cd.descendents[0]
+    comm.bLength.should == 9
+    comm.bDescriptorType.should == Usb::DescriptorTypes::Interface
+    comm.bInterfaceNumber.should == 0
+    comm.bAlternateSetting.should == 0
+    comm.bNumEndpoints.should == 1
+    comm.bInterfaceClass.should == Usb::Cdc::ClassCode
+    
   end
 end
 
