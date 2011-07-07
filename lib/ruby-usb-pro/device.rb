@@ -21,13 +21,24 @@ class Usb::Device
 
   def open_handle; end # Source code is in rusb.c
 
+  def eql?(other); end  # Source code in rusb.c
+
+  def open_handle_core; end  # Source code is in rusb.c
+
+  def get_config_descriptor_binary(index); end # Souce code is in rusb.c
+
+  private
+  def get_device_descriptor; end  # Source code is in rusb.c
+  public
+
   def unref
     close
   end
 
   def device_descriptor
-    # Cache the result because libusb actually does some I/O to retrieve it.
-    # TODO: verify this
+    # TODO: move this function to DeviceHandle to make it
+    # portable to Windows?  OR try to do this:
+    # http://www.osronline.com/showthread.cfm?link=207549
     @device_descriptor ||= get_device_descriptor
   end
 
@@ -79,8 +90,6 @@ class Usb::Device
     eql?(other)
   end
 
-  def eql?(other); end  # Source code in rusb.c
-
   def same_device_as?(other)
     bus_number == other.bus_number && address == other.address
   end
@@ -102,11 +111,5 @@ class Usb::Device
     end
   end
 
-  def open_handle_core; end  # Source code is in rusb.c
-
-  def get_config_descriptor_binary(index); end # Souce code is in rusb.c
-
-  private
-  def get_device_descriptor; end  # Source code is in rusb.c
 end
 

@@ -19,9 +19,12 @@ Jeweler::Tasks.new do |gem|
   gem.license = "MIT"
   gem.files = %w{.document *.txt *.rdoc VERSION
     Gemfile Rakefile
-    ext/extconf.rb ext/*.c
+    ext/extconf.rb ext/*.c ext/*.h
     lib/*.rb
-  } + FileList['spec/*.rb'] + FileList['lib/ruby-usb-pro/*.rb']
+  } +
+    FileList['spec/*.rb'] +
+    FileList['lib/ruby-usb-pro/*.rb'] +
+    FileList['lib/ruby-usb-pro/**/*.rb']
 
   gem.summary = %Q{Ruby library for controlling USB devices.}
   gem.description = <<END

@@ -12,8 +12,21 @@ module Usb::Descriptors
   ClassSpecificDescriptorFactories = {}
 
   class Descriptor
+    attr_accessor :children
+
     def initialize
       raise NotImplementedError, "Descriptor is an abstract class." if self.class == Descriptor
+      @children = []
+    end
+
+    def self.can_be_child_of(*klasses)
+      proc = Proc.new do |descriptor|
+        klasses.each do |klass|
+          return true if descriptor.is_a? klass
+        end
+        return false
+      end
+      define_method :can_be_child_of?, proc
     end
 
     def self.descriptor_type(descriptor_type)
@@ -38,6 +51,11 @@ module Usb::Descriptors
 
       uint8 :bDescriptorType
       uint8 :bDescriptorSubtype
+
+      proc = Proc.new do |descriptor|
+        descriptor.bDescriptorType == descriptor_type & ~0x20
+      end
+      define_method :can_be_child_of?, proc
     end
 
     def self.inherited(descriptor_class)
@@ -168,6 +186,7 @@ module Usb::Descriptors
   end
 
   class Interface < Descriptor
+    can_be_child_of Configuration
     descriptor_type 4
     uint8 :bInterfaceNumber
     uint8 :bAlternateSetting
@@ -176,6 +195,60 @@ module Usb::Descriptors
     uint8 :bInterfaceSubClass
     uint8 :bInterfaceProtocol
     uint8 :iInterface
+  end
+
+  # See Table 9-13 in USB2.0.
+  class Endpoint < Descriptor
+    can_be_child_of Interface
+    descriptor_type 5
+    uint8 :bEndpointAddress
+    uint8 :bmAttributes
+    uint16 :wMaxPacketSize
+    uint8 :bInterval
+
+    def number
+      @bEndpointAddress & 0x7F
+    end
+
+    def direction
+      (@bEndpointAddress & 0x80) == 0 ? :out : :in
+    end
+
+    def transfer_type
+      case @bmAttributes & 3
+        when 0 then :control
+        when 1 then :isochronous
+        when 2 then :bulk
+        when 3 then :interrupt
+      end
+    end
+
+    def synchronization_type
+      case (@bmAttributes >> 2) & 3
+        when 0 then :no_synchronization
+        when 1 then :asynchronous
+        when 2 then :adaptive
+        when 3 then :synchronous
+      end
+    end
+
+    def usage_type
+      case (@bmAttributes >> 4) & 3
+        when 0 then :data
+        when 1 then :feedback
+        when 2 then :implicit_feedback_data
+      end
+    end
+
+    def in?
+      direction == :in
+    end
+
+    def out?
+      direction == :out
+    end
+
+    # TODO: make transfer_type?, synchronization_type?, usage_type? and related functions
   end
 
 end

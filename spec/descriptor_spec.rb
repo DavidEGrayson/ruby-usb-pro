@@ -16,10 +16,9 @@ describe Usb::Descriptors::Configuration do
   end
 
   it "can be generated from binary" do
-    cd = Usb::Descriptors::Configuration.from_binary(wixel_config_descriptor, Usb::Cdc::ClassCode)
+    cd = Usb::Descriptors::Configuration.from_binary wixel_config_descriptor, Usb::Cdc::ClassCode
     cd.should be_a_kind_of Usb::Descriptors::Configuration
 
-    raise cd.inspect
   end
 end
 
