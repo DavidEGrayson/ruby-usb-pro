@@ -20,6 +20,8 @@ describe Usb::Descriptors::Configuration do
     cd.should be_a_kind_of Usb::Descriptors::Configuration
 
     # https://github.com/pololu/wixel-sdk/blob/3601f299c7dd38ab2a9e0ec93451e82aeeeabb46/libraries/src/usb_cdc_acm/usb_cdc_acm.c#L127
+
+    # Configuration
     cd.bLength.should == 9
     cd.bDescriptorType.should == Usb::DescriptorTypes::Configuration
     cd.wTotalLength.should == wixel_config_descriptor.length
@@ -30,8 +32,11 @@ describe Usb::Descriptors::Configuration do
     cd.should be_self_powered
     cd.should_not be_remote_wakeup
     cd.bMaxPower.should == 50
+    cd.children.length.should == 2
 
+    # Communications Interface
     comm = cd.children[0]
+    comm.should be_a_kind_of Usb::Descriptors::Interface
     comm.should be cd.interfaces[0]
     comm.should be cd.descendents[0]
     comm.bLength.should == 9
@@ -40,7 +45,16 @@ describe Usb::Descriptors::Configuration do
     comm.bAlternateSetting.should == 0
     comm.bNumEndpoints.should == 1
     comm.bInterfaceClass.should == Usb::Cdc::ClassCode
-    
+    comm.bInterfaceSubClass.should == Usb::Cdc::SubclassCodes::AbstractControlModel
+    comm.iInterface.should == 0
+    comm.children.length.should == 5
+
+    # Functional Descriptor
+    fd = comm.children[0]
+    fd.should be_a_kind_of Usb::Cdc::HeaderDescriptor
+    fd.bLength.should == 5
+    fd.bDescriptorType.should == Usb::DescriptorTypes::Interface | 0x20
+    fd.bDescriptorSubtype.should == Usb::Cdc::HeaderDescriptor.descriptor_subtype_code
   end
 end
 
@@ -52,5 +66,11 @@ describe Usb::Descriptors::Interface do
 
   it "is has length 9 (bytes)" do
     Usb::Descriptors::Interface.length.should == 9
+  end
+
+  it "can be a child of a configuration descriptor" do
+    intf = Usb::Descriptors::Interface.new
+    cd = Usb::Descriptors::Configuration.new
+    intf.should be_can_be_child_of cd
   end
 end

@@ -19,18 +19,22 @@ module Usb::Descriptors
       @children = []
     end
 
+    class << self
+      attr_accessor :descriptor_type_code
+      attr_accessor :descriptor_subtype_code
+    end
+
     def self.can_be_child_of(*klasses)
-      proc = Proc.new do |descriptor|
+      define_method :can_be_child_of?, (Proc.new do |descriptor|
         klasses.each do |klass|
           return true if descriptor.is_a? klass
         end
         return false
-      end
-      define_method :can_be_child_of?, proc
+      end)
     end
 
     def self.descriptor_type(descriptor_type)
-      @descriptor_type = descriptor_type
+      @descriptor_type_code = descriptor_type
       DescriptorFactories[descriptor_type] = self
       uint8 :bDescriptorType
     end
@@ -46,16 +50,15 @@ module Usb::Descriptors
       x = (x[descriptor_type] ||= {})
       x[descriptor_subtype] = self
 
-      @descriptor_type = descriptor_type
-      @descriptor_subtype = descriptor_subtype
+      @descriptor_type_code = descriptor_type
+      @descriptor_subtype_code = descriptor_subtype
 
       uint8 :bDescriptorType
       uint8 :bDescriptorSubtype
 
-      proc = Proc.new do |descriptor|
+      define_method :can_be_child_of?, (Proc.new do |descriptor|
         descriptor.bDescriptorType == descriptor_type & ~0x20
-      end
-      define_method :can_be_child_of?, proc
+      end)
     end
 
     def self.inherited(descriptor_class)
@@ -192,6 +195,7 @@ module Usb::Descriptors
       config.descendents.each do |desc|
         while !desc.can_be_child_of?(current_ancestors.last)
           current_ancestors.pop
+          raise Usb::DescriptorParsingError, "Unexpected #{desc.class.name}." if current_ancestors.empty?
         end
         current_ancestors.last.children << desc
         current_ancestors << desc

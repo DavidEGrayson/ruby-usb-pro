@@ -1,6 +1,35 @@
 module Usb::Cdc
   ClassCode = 2
 
+  # CDC 1.20 Table 4: Class Subclass Code
+  module SubclassCodes
+    DirectLineControlModel = 1
+    AbstractControlModel = 2
+    TelephoneControlModel = 3
+    MultiChannelControlModel = 4
+    CapiControlModel = 5
+    EthernetNetworkingControlModel = 6
+    AtmNetworkingControlModel = 7
+    WirelessHandsetControlModel = 8
+    DeviceManagement = 9
+    MobileDirectLineModel = 10
+    Obex = 11
+    EthernetEmulationModel = 12
+    NetworkControlModel = 13
+  end
+
+  # CDC 1.20 Table 5: Communications Interface Class Control Protocol Codes
+  module ProtocolCodes
+    AT_V250 = 1
+    AT_PCCA101 = 2
+    AT_PCCA101AndAnnexO = 3
+    AT_GSN7_07 = 4
+    AT_3GPP27_07 = 5
+    AT_TIA_CDMA = 6
+    USB_EEM = 7
+    External = 0xFE
+  end
+
   # Header Functional Descriptor, which marks the beginning of the
   # concatenated set of functional descriptors for the interface.
   # See Table 15 in CDC1.20.
@@ -61,6 +90,7 @@ module Usb::Cdc
     attr_accessor :subordinate_interfaces
 
     def initialize
+      super
       @subordinate_interfaces = []
     end
 
