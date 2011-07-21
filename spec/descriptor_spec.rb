@@ -49,12 +49,17 @@ describe Usb::Descriptors::Configuration do
     comm.iInterface.should == 0
     comm.children.length.should == 5
 
-    # Functional Descriptor
-    fd = comm.children[0]
-    fd.should be_a_kind_of Usb::Cdc::HeaderDescriptor
-    fd.bLength.should == 5
-    fd.bDescriptorType.should == Usb::DescriptorTypes::Interface | 0x20
-    fd.bDescriptorSubtype.should == Usb::Cdc::HeaderDescriptor.descriptor_subtype_code
+    # Header Functional Descriptor
+    comm.children[0].should be_a_kind_of Usb::Cdc::HeaderDescriptor
+    comm.children[0].instance_eval do
+      bLength.should == 5
+      bDescriptorType.should == Usb::DescriptorTypes::Interface | 0x20
+      bDescriptorSubtype.should == Usb::Cdc::HeaderDescriptor.descriptor_subtype_code
+      bcdCDC.should == 0x120
+    end
+
+    
+    
   end
 end
 

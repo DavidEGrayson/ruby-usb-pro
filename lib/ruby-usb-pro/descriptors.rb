@@ -57,7 +57,7 @@ module Usb::Descriptors
       uint8 :bDescriptorSubtype
 
       define_method :can_be_child_of?, (Proc.new do |descriptor|
-        descriptor.bDescriptorType == descriptor_type & ~0x20
+        descriptor.bDescriptorType == self.class.descriptor_type_code & ~0x20
       end)
     end
 
