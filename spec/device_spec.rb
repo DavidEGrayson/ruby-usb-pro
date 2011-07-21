@@ -30,7 +30,6 @@ describe Usb::Device do
     @device.close
     lambda { @device.bus_number }.should raise_error Usb::ClosedError
     lambda { @device.address }.should raise_error Usb::ClosedError
-    lambda { @device.max_packet_size(:foo) }.should raise_error Usb::ClosedError
     lambda { @device.same_device_as?(nil) }.should raise_error Usb::ClosedError
     lambda { @device.device_descriptor }.should raise_error Usb::ClosedError
     lambda { @device.open_handle }.should raise_error Usb::ClosedError
@@ -106,30 +105,6 @@ describe Usb::Device do
       @devices.each do |device|
         device.address.should be_between 0, 127
       end
-    end
-  end
-
-  describe :max_packet_size do
-    it "makes sure its argument is an int" do
-      lambda { @device.max_packet_size(2**64) }.should raise_error RangeError
-      lambda { @device.max_packet_size(:foo) }.should raise_error TypeError
-    end
-
-    it "doesn't actually work" do
-      # TODO: why doesn't max_packet_size work?
-      lambda { @device.max_packet_size(0) }.should raise_error Usb::NotFoundError
-    end
-  end
-
-  describe :max_iso_packet_size do
-    it "makes sure its argument is an int" do
-      lambda { @device.max_iso_packet_size(2**64) }.should raise_error RangeError
-      lambda { @device.max_iso_packet_size(:foo) }.should raise_error TypeError
-    end
-
-    it "doesn't actually work" do
-      # TODO: why doesn't max_packet_size work?
-      lambda { @device.max_iso_packet_size(0) }.should raise_error Usb::NotFoundError
     end
   end
 

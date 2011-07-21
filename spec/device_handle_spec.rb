@@ -32,14 +32,14 @@ describe Usb::DeviceHandle do
   end
 
   it "holds a reference to the device" do
-    @handle.device.should be @device
+    @handle.device.should be $openable_device
   end
 
   it "can be created from a Usb::Device" do
-    h1 = Usb::DeviceHandle.open(@device)
+    h1 = Usb::DeviceHandle.open($openable_device)
     h1.should be_a_kind_of Usb::DeviceHandle
     h1.should_not be_closed
-    h2 = Usb::DeviceHandle.new(@device)
+    h2 = Usb::DeviceHandle.new($openable_device)
     h2.should be_a_kind_of Usb::DeviceHandle
     h2.should_not be_closed
   end
@@ -94,12 +94,12 @@ describe Usb::DeviceHandle do
   end
 
   it "is not equal to things that aren't handles" do
-    @handle.should_not == @device
+    @handle.should_not == $openable_device
   end
 
   it "can be used in a block to guarantee that it gets closed sooner" do
     t = false
-    h = @device.open_handle do |handle|
+    h = $openable_device.open_handle do |handle|
       t = true
       handle.should be_a_kind_of Usb::DeviceHandle
       handle
@@ -108,7 +108,7 @@ describe Usb::DeviceHandle do
     h.should be_closed
 
     t = false
-    h = Usb::DeviceHandle.open(@device) do |handle|
+    h = Usb::DeviceHandle.open $openable_device do |handle|
       t = true
       handle.should be_a_kind_of Usb::DeviceHandle
       handle

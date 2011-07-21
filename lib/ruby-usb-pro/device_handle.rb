@@ -8,10 +8,12 @@ class Usb::DeviceHandle
   def self.open(arg, &block)
     if arg.is_a? Usb::Device
       device = arg
-    else
+    elsif arg.is_a? Hash
       devices = Usb.devices(arg)
       raise NotFoundError, "No devices found matching #{arg.inspect}." if devices.empty?
       device = devices.first
+    else
+      raise TypeError, "The argument to open() must be a Usb::Device or Hash."
     end
     device.open_handle(&block)
   end
@@ -52,7 +54,7 @@ class Usb::DeviceHandle
 
   def configuration_descriptor(index)
     @cached_config_descriptors ||= []
-    @cached_config_descriptors[index] ||= Usb::Descriptors::Configuration.from_binary configuration_descriptor_binary(index), handle.device_descriptor.bDeviceClass
+    @cached_config_descriptors[index] ||= Usb::Descriptors::Configuration.from_binary configuration_descriptor_binary(index), device.device_descriptor.bDeviceClass
   end
 
   def configuration_descriptor_binary(index)
