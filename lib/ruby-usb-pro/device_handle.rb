@@ -73,6 +73,14 @@ class Usb::DeviceHandle
   def control_write_transfer(bmRequestType, bRequest, wValue, wIndex, data=nil)
   end
 
+  def self.inherited(klass)
+    klass.class_eval do
+      def self.devices
+        Usb.devices(UsbProperties)
+      end
+    end
+  end
+
   private
   def get_lang_ids
     ids_string = string_descriptor(0, 0).force_encoding(Encoding::ASCII_8BIT)
