@@ -70,13 +70,16 @@ class Usb::DeviceHandle
     # Source code is in device_handle.c
   end
 
+  def control_write_transfer(bmRequestType, bRequest, wValue, wIndex, data=nil)
+  end
+
   private
   def get_lang_ids
     ids_string = string_descriptor(0, 0).force_encoding(Encoding::ASCII_8BIT)
     i = 0
     ids = []
     while(i+1 < ids_string.length)
-      ids << ids_string[0].ord + ids_string[1].ord * 256
+      ids << ids_string[i].ord + ids_string[i+1].ord * 256
       i+= 2
     end
     return ids
