@@ -18,6 +18,25 @@ describe WixelUsbTest do
   it "can set and get the blink period" do
     @wixel.blink_period = 200
     @wixel.blink_period.should == 200
+    @wixel.blink_period = 400
+    @wixel.blink_period.should == 400
+  end
+
+  it "can get and set the name" do
+    @wixel.name = ""
+    @wixel.name.should == ""
+
+    @wixel.name = "Peter"
+    @wixel.name.should == "Peter"
+  end
+
+  it "max name length is 255" do
+    lambda { @wixel.name = "x"*256 }.should raise_error Usb::PipeError
+    @wixel.name.should == "Peter"
+    
+    strange_name = "\x00"*255
+    @wixel.name = strange_name
+    @wixel.name.should == strange_name
   end
 
 end if $wixel_device

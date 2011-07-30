@@ -23,6 +23,14 @@ class WixelUsbTest
     handle.control_write_transfer 0x40, 1, period, 0
   end
 
+  def name=(name)
+    handle.control_write_transfer 0x40, 2, 0, 0, name
+  end
+
+  def name
+    handle.control_read_transfer 0xC0, 2, 0, 0, 255
+  end
+
   def start_bootloader!
     handle.control_write_transfer 0x40, 0xFF, 0, 0
     close
