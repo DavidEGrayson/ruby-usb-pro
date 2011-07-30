@@ -98,9 +98,9 @@ static VALUE dh_control_write_transfer(int argc, VALUE *argv, VALUE self)
     }
     buffer = RSTRING_PTR(oData);
     wLength = RSTRING_LEN(oData);
-    if (wLength < 0 || wLength > 0xFFFF)
+    if (wLength > 0xFFFF)
     {
-      rb_raise(rb_eRangeError, "Expected length of data to be between 0 and 65535.");
+      rb_raise(rb_eRangeError, "Expected length of data to be at most 65535.");
     }
   }
   int result = libusb_control_transfer
@@ -109,7 +109,7 @@ static VALUE dh_control_write_transfer(int argc, VALUE *argv, VALUE self)
 		 FIX2INT(owValue), FIX2INT(owIndex),
 		 buffer, wLength, timeout);
   if (result < 0){ raise_usb_exception(result); }
-  return rb_str_new(buffer, result);
+  return Qnil;
 }
 
 void Init_device_handle()
