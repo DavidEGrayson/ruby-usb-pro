@@ -22,18 +22,14 @@ class Usb::DeviceHandle
     end
   end
 
-  def self.open_to_device(device, &block)
-    handle = new(device)
+  def self.open(arg={}, &block)
+    handle = new device arg
     return handle unless block_given?
     begin
       return yield(handle)
     ensure
       handle.close
     end
-  end
-
-  def self.open(arg={}, &block)
-    open_to_device device(arg), &block
   end
 
   def dup
