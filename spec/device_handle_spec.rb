@@ -19,6 +19,20 @@ catch :found_device do
 end
 
 describe Usb::DeviceHandle do
+  it "can list devices" do
+    Usb::DeviceHandle.devices.should be_a_kind_of Array
+  end
+
+  it "can get a particular device" do
+    Usb::DeviceHandle.device(:vendor_id => Usb::DeviceHandle.devices.first.vendor_id).should be_a_kind_of Usb::Device
+  end
+
+  it "throws an exception if that device is not found" do
+    lambda { Usb::DeviceHandle.device(:vendor_id => 0x10000) }.should raise_error Usb::NotFoundError
+  end
+end
+
+describe Usb::DeviceHandle do
   before(:each) do
     @handle = $openable_device.open_handle
   end

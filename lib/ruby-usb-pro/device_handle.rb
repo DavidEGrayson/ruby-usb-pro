@@ -1,5 +1,9 @@
 class Usb::DeviceHandle
   MaxDescriptorLength = 1024
+
+  # To define which USB devices are considered to be part of
+  # the subclass, subclasses of DeviceHandle should either overwrite
+  # UsbProperties or overwrite self.devices.
   UsbProperties = {}
 
   def initialize(device); end # Source code is in device_handle.c
@@ -15,7 +19,7 @@ class Usb::DeviceHandle
       arg
     elsif arg.is_a? Hash
       device_list = devices(arg)
-      raise NotFoundError, "No devices found matching #{arg.inspect}." if devices.empty?
+      raise Usb::NotFoundError, "No devices found matching #{arg.inspect}." if device_list.empty?
       device_list.first
     else
       raise TypeError, "Expected a Usb::Device or Hash."
