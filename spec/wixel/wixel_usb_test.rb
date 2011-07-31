@@ -9,12 +9,12 @@ class WixelUsbTest < Usb::DeviceHandle
     control_write_transfer 0x40, 1, period, 0
   end
 
-  def name=(name)
-    control_write_transfer 0x40, 2, 0, 0, name
-  end
-
   def name
     control_read_transfer 0xC0, 2, 0, 0, 255
+  end
+
+  def name=(name)
+    control_write_transfer 0x40, 2, 0, 0, name
   end
 
   def start_bootloader!
