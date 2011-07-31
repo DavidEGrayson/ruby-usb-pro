@@ -270,5 +270,4 @@ void Init_rusb()
   rb_define_method(cDevice, "closed?", usb_object_closed, 0);
   rb_define_method(cDevice, "get_device_descriptor", device_get_device_descriptor, 0);
   rb_define_method(cDevice, "eql?", device_equal, 1);
-  rb_define_method(cDevice, "open_handle_core", dh_new, 0);
 }

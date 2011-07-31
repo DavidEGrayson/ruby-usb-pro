@@ -50,6 +50,7 @@ describe Usb::DeviceHandle do
     @handle.should be_closed
   end
 
+  # This behavior is the same as Ruby's built-in File class."
   it "should not be used after it is closed" do
     @handle.close
     lambda { @handle.lang_ids }.should raise_error Usb::ClosedError

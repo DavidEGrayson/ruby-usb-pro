@@ -19,7 +19,6 @@ class WixelUsbTest < Usb::DeviceHandle
 
   def start_bootloader!
     control_write_transfer 0x40, 0xFF, 0, 0
-    close
   end
 end
 

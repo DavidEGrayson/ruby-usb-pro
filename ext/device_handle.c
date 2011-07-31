@@ -49,7 +49,7 @@ static VALUE dh_alloc(VALUE klass)
   return Data_Wrap_Struct(klass, NULL, dh_free, NULL);
 }
 
-VALUE dh_new(VALUE device)
+static VALUE dh_new(VALUE device)
 {
   return rb_class_new_instance(1, &device, cDeviceHandle);
 }

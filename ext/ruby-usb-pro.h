@@ -6,7 +6,6 @@
 
 libusb_device * device_extract(VALUE device);
 
-VALUE dh_new(VALUE device);
 NORETURN(void raise_usb_exception(int error_code));
 VALUE usb_object_closed(VALUE self);
 VALUE eClosedError;

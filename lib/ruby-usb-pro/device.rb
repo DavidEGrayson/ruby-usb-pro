@@ -19,11 +19,7 @@ class Usb::Device
   def closed?; end     # Source code is in rusb.c
   def close; end       # Source code is in rusb.c
 
-  def open_handle; end # Source code is in rusb.c
-
   def eql?(other); end  # Source code in rusb.c
-
-  def open_handle_core; end  # Source code is in rusb.c
 
   def get_config_descriptor_binary(index); end # Souce code is in rusb.c
 
@@ -102,13 +98,7 @@ class Usb::Device
   end
 
   def open_handle(&block)
-    handle = open_handle_core
-    return handle unless block_given?
-    begin
-      return yield(handle)
-    ensure
-      handle.close
-    end
+    Usb::DeviceHandle.open self, &block
   end
 
 end

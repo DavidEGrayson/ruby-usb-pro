@@ -1,25 +1,43 @@
 class Usb::DeviceHandle
   MaxDescriptorLength = 1024
+  UsbProperties = {}
 
   def initialize(device); end # Source code is in device_handle.c
 
   attr_reader :device
 
-  def self.open(arg, &block)
+  def self.devices(arg={})
+    Usb.devices(self::UsbProperties.merge(arg))
+  end
+
+  def self.device(arg={})
     if arg.is_a? Usb::Device
-      device = arg
+      arg
     elsif arg.is_a? Hash
-      devices = Usb.devices(arg)
+      device_list = devices(arg)
       raise NotFoundError, "No devices found matching #{arg.inspect}." if devices.empty?
-      device = devices.first
+      device_list.first
     else
-      raise TypeError, "The argument to open() must be a Usb::Device or Hash."
+      raise TypeError, "Expected a Usb::Device or Hash."
     end
-    device.open_handle(&block)
+  end
+
+  def self.open_to_device(device, &block)
+    handle = new(device)
+    return handle unless block_given?
+    begin
+      return yield(handle)
+    ensure
+      handle.close
+    end
+  end
+
+  def self.open(arg={}, &block)
+    open_to_device device(arg), &block
   end
 
   def dup
-    dev = device.open_handle
+    dev = self.class.new(device)
     dev.close if closed?
     dev
   end
@@ -71,14 +89,6 @@ class Usb::DeviceHandle
   end
 
   def control_write_transfer(bmRequestType, bRequest, wValue, wIndex, data=nil)
-  end
-
-  def self.inherited(klass)
-    klass.class_eval do
-      def self.devices
-        Usb.devices(UsbProperties)
-      end
-    end
   end
 
   private

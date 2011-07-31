@@ -15,6 +15,29 @@ describe WixelUsbTest do
     @wixel = WixelUsbTest.new($wixel_device)
   end
 
+  it "can be opened with a block" do
+    wixel_local = nil
+    WixelUsbTest.open do |wixel|
+      wixel.blink_period = 199
+      wixel.blink_period.should == 199
+      wixel_local = wixel
+      "success"
+    end.should == "success"
+    wixel_local.should be_closed
+  end
+
+  it "devices can be listed" do
+    devices = WixelUsbTest.devices
+    devices.should include $wixel_device
+
+    pending "implementation of UsbDevice#serial_number"
+    WixelUsbTest.devices(:serial_number => $wixel_device.serial_number).should == [$wixel_device]
+  end
+
+  it "has a device function which always returns a single device" do
+    WixelUsbTest.device.should == $wixel_device
+  end
+
   it "can set and get the blink period" do
     @wixel.blink_period = 200
     @wixel.blink_period.should == 200
