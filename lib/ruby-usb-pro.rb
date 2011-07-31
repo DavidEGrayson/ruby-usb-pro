@@ -6,7 +6,6 @@ require 'ruby-usb-pro/constants'
 require 'ruby-usb-pro/context'
 require 'ruby-usb-pro/device'
 require 'ruby-usb-pro/device_handle'
-require 'ruby-usb-pro/descriptors'
+require 'ruby-usb-pro/device_descriptor'
 require 'rusb'
 
-require 'ruby-usb-pro/class/cdc.rb'

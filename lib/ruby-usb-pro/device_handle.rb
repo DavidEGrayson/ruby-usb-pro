@@ -57,7 +57,6 @@ class Usb::DeviceHandle
 
   # USB 2.0 Spec section 9.4.3
   def get_descriptor(type, index, language_id=0)
-    type = Usb::DescriptorType.find(type) if type.is_a? Symbol
     raise "Expected type to be a symbol or integer" unless type.is_a? Integer
     control_read_transfer(0x80, Usb::Requests::GetDescriptor, type*256 + index, language_id, MaxDescriptorLength)
   end
@@ -68,11 +67,6 @@ class Usb::DeviceHandle
     string = string[2,255]
     string.force_encoding(Encoding::UTF_16LE) if string.respond_to?(:force_encoding)
     return string
-  end
-
-  def configuration_descriptor(index)
-    @cached_config_descriptors ||= []
-    @cached_config_descriptors[index] ||= Usb::Descriptors::Configuration.from_binary configuration_descriptor_binary(index), device.device_descriptor.bDeviceClass
   end
 
   def configuration_descriptor_binary(index)

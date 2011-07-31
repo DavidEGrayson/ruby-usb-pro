@@ -145,9 +145,4 @@ describe Usb::DeviceHandle do
     cdb.length.should == cdb.unpack("xxv")[0]
   end
 
-  it "can get the configuration descriptor as binary" do
-    cd = @handle.configuration_descriptor(0)
-    cd.should be_a_kind_of Usb::Descriptors::Configuration
-  end
-
 end if $openable_device
