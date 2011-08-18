@@ -5,5 +5,13 @@
 require 'irb'
 require_relative File.join '..', 'spec_helper'
 require_relative 'wixel_usb_test'
-(w = WixelUsbTest.open) rescue puts "Unable to open handle to Wixel: #$!"
+
+begin
+  @w = WixelUsbTest.open
+  class << self; attr_accessor :w; end
+  puts "Handle to Wixel has been opened.  Type 'w' to access it."
+rescue Exception
+  puts "Unable to open Wixel: #$!"
+end
 IRB.start __FILE__
+
