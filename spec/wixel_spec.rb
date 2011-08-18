@@ -30,7 +30,6 @@ describe WixelUsbTest do
     devices = WixelUsbTest.devices
     devices.should include $wixel_device
 
-    pending "implementation of UsbDevice#serial_number"
     WixelUsbTest.devices(:serial_number => $wixel_device.serial_number).should == [$wixel_device]
   end
 

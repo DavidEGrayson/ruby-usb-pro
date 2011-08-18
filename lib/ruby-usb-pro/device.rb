@@ -78,6 +78,12 @@ class Usb::Device
     end
   end
 
+  def serial_number
+    open_handle do |handle|
+      handle.string_descriptor device_descriptor.iSerialNumber
+    end
+  end
+
   def ==(other)
     eql?(other)
   end
