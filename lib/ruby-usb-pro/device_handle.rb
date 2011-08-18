@@ -83,6 +83,7 @@ class Usb::DeviceHandle
   end
 
   def control_write_transfer(bmRequestType, bRequest, wValue, wIndex, data=nil)
+    # Source code is in device_handle.c
   end
 
   private
