@@ -71,11 +71,7 @@ class Usb::Device
   end
 
   def self.revision_bcd_to_string(revision_bcd)
-    if revision_bcd < 0x1000
-      ('%03X' % revision_bcd).insert(1, '.')
-    else
-      ('%04X' % revision_bcd).insert(2, '.')
-    end
+    "%X.%02X" % [revision_bcd >> 8, revision_bcd & 0xFF]
   end
 
   def serial_number
