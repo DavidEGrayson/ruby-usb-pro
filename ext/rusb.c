@@ -213,7 +213,7 @@ static VALUE device_close(VALUE self)
   return Qnil;
 }
 
-static VALUE device_get_device_descriptor(VALUE self)
+static VALUE device_descriptor(VALUE self)
 {
   struct libusb_device_descriptor desc;
   int result = libusb_get_device_descriptor(device_extract(self), &desc);
@@ -268,6 +268,6 @@ void Init_rusb()
   rb_define_method(cDevice, "initialize_copy", device_copy, 1);
   rb_define_method(cDevice, "close", device_close, 0);
   rb_define_method(cDevice, "closed?", usb_object_closed, 0);
-  rb_define_method(cDevice, "get_device_descriptor", device_get_device_descriptor, 0);
+  rb_define_method(cDevice, "get_device_descriptor", device_descriptor, 0);
   rb_define_method(cDevice, "eql?", device_equal, 1);
 }
